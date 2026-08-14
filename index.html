@@ -282,6 +282,95 @@
 				transform: translateY(-2px);
 				box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
 			}
+
+			/* АДАПТАЦІЯ ДЛЯ МОБІЛЬНИХ ПРИСТРОЇВ */
+			@media (max-width: 768px) {
+				header {
+					padding: 14px 16px;
+					flex-direction: column;
+					align-items: flex-start;
+					gap: 10px;
+				}
+
+				.logo-title {
+					font-size: 1.05rem;
+				}
+
+				.logo-subtitle {
+					font-size: 0.72rem;
+				}
+
+				.nav-breadcrumbs {
+					font-size: 0.82rem;
+				}
+
+				main {
+					padding: 18px 12px;
+				}
+
+				.hero {
+					flex-direction: column;
+					align-items: stretch;
+					padding: 20px 18px;
+					gap: 16px;
+				}
+
+				.hero-text h1 {
+					font-size: 1.4rem;
+				}
+
+				.teacher-badge {
+					width: 100%;
+					justify-content: flex-start;
+				}
+
+				.components-grid {
+					grid-template-columns: 1fr;
+				}
+
+				.subject-header-box {
+					padding: 18px 14px;
+				}
+
+				#subject-title {
+					font-size: 1.4rem !important;
+				}
+
+				.lecture-content-box {
+					padding: 20px 14px;
+				}
+
+				#lesson-title {
+					font-size: 1.4rem !important;
+				}
+
+				.lesson-item {
+					padding: 12px 14px;
+					flex-direction: column;
+					align-items: flex-start;
+					gap: 8px;
+				}
+
+				.task-badge {
+					align-self: flex-start;
+				}
+
+				.download-card {
+					flex-direction: column;
+					align-items: stretch;
+					gap: 12px;
+					text-align: center;
+				}
+
+				.download-card .btn-back {
+					justify-content: center;
+				}
+
+				.modal-card {
+					padding: 20px 16px;
+					border-radius: 16px;
+				}
+			}
 		</style>
 	</head>
 	<body>
@@ -292,7 +381,7 @@
 				<div class="logo-subtitle">ДНІПРОВСЬКИЙ ФАХОВИЙ КОЛЕДЖ РАДІОЕЛЕКТРОНІКИ</div>
 			</div>
 			<div class="nav-breadcrumbs" id="breadcrumbs">
-				<span> </span>
+				<span>Головна</span>
 			</div>
 		</header>
 
@@ -603,11 +692,12 @@
 
 			function renderLessonsList() {
 				const container = document.getElementById('modules-container');
-				// ✅ СТАЛО (працює за ID)
-let filtered = lessonsList.filter(l => l.subjectId === currentSubject._id);
-if (activeFilter !== 'ALL') {
-    filtered = filtered.filter(l => l.typeId === activeFilter);
-}
+				let filtered = lessonsList.filter(l => l.discipline === currentSubject.title);
+
+				if (activeFilter !== 'ALL') {
+					filtered = filtered.filter(l => l.taskType === activeFilter);
+				}
+
 				if (filtered.length > 0) {
 					container.innerHTML = `
 						<div class="module-block">
