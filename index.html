@@ -107,7 +107,7 @@
 				transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; gap: 8px;
 			}
 			.filter-btn:hover { border-color: var(--bright-blue); transform: translateY(-2px); }
-			.filter-btn.active { background: var(--deep-blue); color: white; border-color: var(--deep-blue); box-shadow: 0 4px 12px rgba(0,27,76,0.2); }
+			.filter-btn.active { background: var(--deep-blue); color: white; border-color: var(--deep-blue); shadow: 0 4px 12px rgba(0,27,76,0.2); }
 			.filter-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 
 			/* СПИСОК МАТЕРІАЛІВ ТА БЕЙДЖІ */
@@ -130,16 +130,35 @@
 				color: #0f172a; transition: all 0.2s; border: 1px solid rgba(0,0,0,0.08);
 			}
 
-			/* МОДАЛЬНЕ ВІКНО */
+			/* ==========================================
+			   ОНОВЛЕНІ СТИЛІ ТА АНІМАЦІЇ МОДАЛЬНОГО ВІКНА
+			   ========================================== */
+
 			@keyframes overlayFadeIn {
-				from { opacity: 0; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px); }
-				to { opacity: 1; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+				from {
+					opacity: 0;
+					backdrop-filter: blur(0px);
+					-webkit-backdrop-filter: blur(0px);
+				}
+				to {
+					opacity: 1;
+					backdrop-filter: blur(8px);
+					-webkit-backdrop-filter: blur(8px);
+				}
 			}
 
 			@keyframes modalSpringPop {
-				0% { opacity: 0; transform: scale(0.82) translateY(30px); }
-				70% { transform: scale(1.02) translateY(-3px); }
-				100% { opacity: 1; transform: scale(1) translateY(0); }
+				0% {
+					opacity: 0;
+					transform: scale(0.82) translateY(30px);
+				}
+				70% {
+					transform: scale(1.02) translateY(-3px);
+				}
+				100% {
+					opacity: 1;
+					transform: scale(1) translateY(0);
+				}
 			}
 
 			.modal-overlay {
@@ -292,9 +311,13 @@
 				</div>
 
 				<!-- Панель фільтрів за типами завдань -->
-				<div class="filters-container" id="filters-bar"></div>
+				<div class="filters-container" id="filters-bar">
+					<!-- Фільтри згенеровано JS -->
+				</div>
 
-				<div id="modules-container"></div>
+				<div id="modules-container">
+					<!-- Лекції -->
+				</div>
 			</div>
 
 			<!-- 3. СТОРІНКА ЛЕКЦІЇ -->
@@ -306,7 +329,7 @@
 						<span id="lesson-badge" class="task-badge">Матеріал</span>
 					</div>
 					<h1 id="lesson-title" style="color: var(--deep-blue); font-size: 1.8rem; margin-bottom: 20px;">...</h1>
-					<div id="lesson-body" style="white-space: pre-line;"></div>
+					<div id="lesson-body"></div>
 
 					<div class="download-card" id="attachment-block" style="display: none;">
 						<div>
@@ -330,7 +353,9 @@
 						<p id="modal-role" style="color:var(--bright-blue); font-size:0.88rem; font-weight:600;">Спеціаліст</p>
 					</div>
 				</div>
-				<p id="modal-bio">Завантаження інформації...</p>
+				<p id="modal-bio">
+					Завантаження інформації...
+				</p>
 				<div id="modal-contacts-box">
 					<strong>📬 Контакти:</strong> <span id="modal-contacts">...</span>
 				</div>
@@ -380,15 +405,10 @@
 				}
 			}
 
+			// Застосування стилів і даних портфоліо
 			function applyPortfolioData(p) {
-				if(p.name) {
-					document.getElementById('hero-name').innerText = p.name;
-					document.getElementById('modal-name').innerText = p.name;
-				}
-				if(p.role) {
-					document.getElementById('hero-role').innerText = p.role;
-					document.getElementById('modal-role').innerText = p.role;
-				}
+				if(p.name) document.getElementById('hero-name').innerText = p.name;
+				if(p.role) document.getElementById('hero-role').innerText = p.role;
 				if(p.avatar) {
 					document.getElementById('hero-avatar').innerText = p.avatar;
 					document.getElementById('modal-avatar').innerText = p.avatar;
@@ -399,6 +419,8 @@
 				}
 				if(p.bio) document.getElementById('modal-bio').innerText = p.bio;
 				if(p.contacts) document.getElementById('modal-contacts').innerText = p.contacts;
+				if(p.name) document.getElementById('modal-name').innerText = p.name;
+				if(p.role) document.getElementById('modal-role').innerText = p.role;
 			}
 
 			function showView(viewId) {
@@ -430,22 +452,19 @@
 				showView('view-subject');
 			}
 
-			function openLessonById(lessonId) {
-				const lesson = lessonsList.find(l => l._id === lessonId);
-				if (!lesson) return;
-
-				document.getElementById('lesson-title').innerText = lesson.title || 'Без назви';
-				document.getElementById('lesson-body').innerText = lesson.content || 'Текст матеріалу відсутній.';
+			function navToLesson(title, content, fileUrl, taskType) {
+				document.getElementById('lesson-title').innerText = title;
+				document.getElementById('lesson-body').innerHTML = `<p>${content || 'Текст матеріалу відсутній.'}</p>`;
 
 				const badge = document.getElementById('lesson-badge');
-				badge.innerText = lesson.taskType || 'Матеріал';
-				const colorObj = taskTypesList.find(t => t.title === lesson.taskType);
+				badge.innerText = taskType || 'Матеріал';
+				const colorObj = taskTypesList.find(t => t.title === taskType);
 				badge.style.background = colorObj ? colorObj.color : '#e0f2fe';
 
 				const attachBlock = document.getElementById('attachment-block');
-				if (lesson.fileUrl && lesson.fileUrl.trim() !== '') {
+				if (fileUrl && fileUrl.trim() !== '') {
 					attachBlock.style.display = 'flex';
-					document.getElementById('download-btn').href = lesson.fileUrl;
+					document.getElementById('download-btn').href = fileUrl;
 				} else {
 					attachBlock.style.display = 'none';
 				}
@@ -453,21 +472,22 @@
 				document.getElementById('breadcrumbs').innerHTML = `
 					<a onclick="navToMain()">Головна</a> <span>/</span>
 					<a onclick="navToSubject()">${currentSubject ? currentSubject.title : 'Предмет'}</a> <span>/</span>
-					<span>${lesson.title}</span>
+					<span>${title}</span>
 				`;
 
 				showView('view-lesson');
 			}
 
+			// Відображення карток дисциплін
 			function renderSubjects() {
 				const container = document.getElementById('subjects-container');
 				if(subjectsList.length === 0) {
-					container.innerHTML = '<p style="color: #64748b;">Дисциплін поки немає.</p>';
+					container.innerHTML = '<p style="color: #64748b;">Дисциплін поки немає. Створіть їх в /admin.html!</p>';
 					return;
 				}
 
 				container.innerHTML = subjectsList.map(sub => `
-					<div class="component-card" onclick="navToSubject('${escapeAttr(sub.title)}')">
+					<div class="component-card" onclick="navToSubject('${escapeHtml(sub.title)}')">
 						<div>
 							<div class="card-header">
 								<div class="icon-box">${sub.icon || '📚'}</div>
@@ -483,6 +503,7 @@
 				`).join('');
 			}
 
+			// Рендер кнопок фільтрів
 			function renderFilters() {
 				const bar = document.getElementById('filters-bar');
 				
@@ -493,7 +514,7 @@
 				`;
 
 				html += taskTypesList.map(tt => `
-					<button class="filter-btn ${activeFilter === tt.title ? 'active' : ''}" onclick="setFilter('${escapeAttr(tt.title)}')">
+					<button class="filter-btn ${activeFilter === tt.title ? 'active' : ''}" onclick="setFilter('${escapeHtml(tt.title)}')">
 						<span class="filter-dot" style="background: ${tt.color || '#00a3ff'};"></span>
 						${tt.title}
 					</button>
@@ -508,6 +529,7 @@
 				renderLessonsList();
 			}
 
+			// Рендер лекцій з урахуванням обраного фільтра
 			function renderLessonsList() {
 				const container = document.getElementById('modules-container');
 				let filtered = lessonsList.filter(l => l.discipline === currentSubject.title);
@@ -525,7 +547,7 @@
 									const badgeColor = ttObj ? ttObj.color : '#e0f2fe';
 
 									return `
-										<div class="lesson-item" onclick="openLessonById('${item._id}')">
+										<div class="lesson-item" onclick="navToLesson('${escapeHtml(item.title)}', '${escapeHtml(item.content)}', '${escapeHtml(item.fileUrl)}', '${escapeHtml(item.taskType)}')">
 											<span style="font-weight: 600; font-size: 0.95rem;">${item.title}</span>
 											<span class="task-badge" style="background: ${badgeColor};">${item.taskType || 'Матеріал'}</span>
 										</div>
@@ -539,11 +561,12 @@
 				}
 			}
 
-			function escapeAttr(text) {
+			function escapeHtml(text) {
 				if (!text) return '';
-				return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+				return text.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '<br>');
 			}
 
+			// Модальне вікно
 			function openPortfolioModal() { document.getElementById('portfolioModal').style.display = 'flex'; }
 			function closePortfolioModal() { document.getElementById('portfolioModal').style.display = 'none'; }
 			function closePortfolioOutside(e) { if (e.target.classList.contains('modal-overlay')) closePortfolioModal(); }
