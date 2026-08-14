@@ -6,30 +6,39 @@
     <title>Навчальні Матеріали — ДФКР</title>
     <style>
         :root {
-            --deep-blue: #001b4c;
-            --bright-blue: #00a3ff;
-            --bg-color: #f8fafc;
+            --primary: #0f172a;
+            --primary-light: #1e293b;
+            --accent: #0284c7;
+            --accent-hover: #0369a1;
+            --bg: #f8fafc;
             --card-bg: #ffffff;
-            --border-color: #e2e8f0;
+            --border: #e2e8f0;
             --text-main: #0f172a;
             --text-muted: #64748b;
+            --radius: 12px;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.04);
+            --shadow-md: 0 6px 16px rgba(0,0,0,0.08);
+            --shadow-lg: 0 12px 32px rgba(0,0,0,0.15);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background-color: var(--bg-color);
+            background-color: var(--bg);
             color: var(--text-main);
             line-height: 1.6;
         }
 
-        /* Хедер */
+        /* Шапка сайту */
         header {
-            background: var(--deep-blue);
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             color: white;
-            padding: 20px 0;
-            box-shadow: 0 4px 20px rgba(0,27,76,0.15);
+            padding: 25px 0;
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .header-container {
@@ -43,209 +52,340 @@
             gap: 15px;
         }
 
-        .logo-area h1 { font-size: 1.5rem; font-weight: 700; }
-        .logo-area p { font-size: 0.85rem; color: #94a3b8; }
+        .logo-area h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .logo-area p {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
 
         .btn-portfolio {
             background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.25);
+            border: 1px solid rgba(255,255,255,0.2);
             color: white;
-            padding: 10px 18px;
-            border-radius: 10px;
+            padding: 10px 20px;
+            border-radius: 30px;
             cursor: pointer;
             font-weight: 600;
             font-size: 0.9rem;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
-            transition: all 0.2s;
+            transition: all 0.25s ease;
+            backdrop-filter: blur(5px);
         }
 
         .btn-portfolio:hover {
-            background: var(--bright-blue);
-            border-color: var(--bright-blue);
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(2,132,199,0.4);
         }
 
-        /* Контейнер сайту */
+        /* Контейнер */
         .main-container {
             max-width: 1100px;
-            margin: 30px auto;
+            margin: 35px auto;
             padding: 0 20px;
         }
 
-        /* Блок Дисциплін */
         .section-title {
-            font-size: 1.3rem;
-            color: var(--deep-blue);
-            margin-bottom: 15px;
+            font-size: 1.35rem;
+            color: var(--primary);
+            margin-bottom: 18px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            font-weight: 700;
         }
 
+        /* Дисципліни (Сітка) */
         .subjects-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 15px;
-            margin-bottom: 35px;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 18px;
+            margin-bottom: 40px;
         }
 
         .subject-card {
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 18px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px;
+            transition: all 0.25s ease;
             cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
         }
 
         .subject-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-            border-color: var(--bright-blue);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--accent);
         }
 
-        .subject-card .icon { font-size: 2rem; margin-bottom: 8px; }
-        .subject-card h3 { font-size: 1.1rem; color: var(--deep-blue); margin-bottom: 4px; }
-        .subject-card p { font-size: 0.85rem; color: var(--text-muted); }
+        .subject-card .icon {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
 
-        /* Панель фільтрації матеріалів */
+        .subject-card h3 {
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        .subject-card p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Панель Фільтрації */
         .filter-bar {
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 15px 20px;
-            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 16px 22px;
+            border-radius: var(--radius);
             margin-bottom: 25px;
             display: flex;
-            gap: 15px;
+            gap: 20px;
             flex-wrap: wrap;
             align-items: center;
+            box-shadow: var(--shadow-sm);
         }
 
-        .filter-group { display: flex; align-items: center; gap: 8px; }
-        .filter-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-group label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
         select {
-            padding: 8px 12px;
-            border: 1px solid var(--border-color);
+            padding: 9px 14px;
+            border: 1.5px solid var(--border);
             border-radius: 8px;
             font-size: 0.9rem;
             outline: none;
             background: white;
+            color: var(--text-main);
+            font-weight: 500;
+            cursor: pointer;
+            transition: border-color 0.2s;
         }
 
-        /* Список Матеріалів */
+        select:focus {
+            border-color: var(--accent);
+        }
+
+        /* Список Лекцій/Матеріалів */
         .lessons-list {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 16px;
         }
 
         .lesson-card {
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+        }
+
+        .lesson-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: var(--shadow-md);
         }
 
         .lesson-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            gap: 10px;
-            margin-bottom: 10px;
+            gap: 12px;
+            margin-bottom: 12px;
         }
 
-        .lesson-title { font-size: 1.15rem; color: var(--deep-blue); font-weight: 700; }
+        .lesson-title {
+            font-size: 1.15rem;
+            color: var(--primary);
+            font-weight: 700;
+        }
 
-        .badges { display: flex; gap: 6px; flex-wrap: wrap; }
+        .badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
         .badge {
             font-size: 0.75rem;
-            padding: 4px 10px;
+            padding: 4px 12px;
             border-radius: 20px;
-            font-weight: 600;
+            font-weight: 700;
+            letter-spacing: 0.2px;
         }
+
         .badge-discipline { background: #e0e7ff; color: #3730a3; }
         .badge-type { background: #e0f2fe; color: #0369a1; }
 
         .lesson-content {
             font-size: 0.95rem;
             color: #334155;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             white-space: pre-line;
+            line-height: 1.6;
         }
 
         .btn-file {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            background: var(--bright-blue);
+            gap: 8px;
+            background: var(--accent);
             color: white;
             text-decoration: none;
-            padding: 8px 16px;
+            padding: 9px 18px;
             border-radius: 8px;
             font-size: 0.85rem;
             font-weight: 600;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.2s;
         }
-        .btn-file:hover { background: #008be6; }
 
-        /* Модальне вікно портфоліо */
+        .btn-file:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        /* Модальне вікно Портфоліо */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(6px);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
             padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        .modal-overlay.active { display: flex; }
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
 
         .modal-card {
             background: white;
-            border-radius: 16px;
-            max-width: 600px;
+            border-radius: 20px;
+            max-width: 580px;
             width: 100%;
-            max-height: 90vh;
+            max-height: 85vh;
             overflow-y: auto;
-            padding: 30px;
+            padding: 32px;
             position: relative;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: translateY(0);
         }
 
         .close-btn {
             position: absolute;
-            top: 15px; right: 15px;
+            top: 20px; right: 20px;
             background: #f1f5f9;
             border: none;
-            width: 32px; height: 32px;
+            width: 36px; height: 36px;
             border-radius: 50%;
             cursor: pointer;
             font-weight: bold;
             color: var(--text-muted);
+            font-size: 1rem;
+            transition: background 0.2s;
         }
+
+        .close-btn:hover { background: #e2e8f0; color: var(--primary); }
 
         .profile-header {
             text-align: center;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 20px;
-            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 22px;
+            margin-bottom: 22px;
         }
 
-        .profile-avatar { font-size: 4rem; line-height: 1; margin-bottom: 10px; }
-        .profile-name { font-size: 1.4rem; color: var(--deep-blue); font-weight: 700; }
-        .profile-role { color: var(--bright-blue); font-weight: 600; font-size: 0.95rem; }
+        .profile-avatar {
+            font-size: 4.5rem;
+            line-height: 1;
+            margin-bottom: 12px;
+            display: inline-block;
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 50%;
+        }
 
-        .info-block { margin-bottom: 18px; }
-        .info-block h4 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px; }
-        .info-block p { font-size: 0.95rem; color: var(--text-main); }
+        .profile-name {
+            font-size: 1.45rem;
+            color: var(--primary);
+            font-weight: 800;
+        }
 
-        .tags-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
-        .tag-item { background: #f1f5f9; color: var(--deep-blue); font-weight: 600; padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; }
+        .profile-role {
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+
+        .info-block { margin-bottom: 20px; }
+        .info-block h4 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .info-block p {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            white-space: pre-line;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .tag-item {
+            background: #e0f2fe;
+            color: #0369a1;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
     </style>
 </head>
 <body>
@@ -255,7 +395,7 @@
         <div class="header-container">
             <div class="logo-area">
                 <h1>🎓 Дніпровський фаховий коледж радіоелектроніки</h1>
-                <p>База навчальних матеріалів та лекцій</p>
+                <p>Офіційний портал навчальних матеріалів</p>
             </div>
             <button class="btn-portfolio" onclick="openPortfolioModal()">
                 <span>👨‍🏫</span> Портфоліо викладача
@@ -269,7 +409,7 @@
         <!-- СЕКЦІЯ ДИСЦИПЛІН -->
         <h2 class="section-title">📚 Дисципліни</h2>
         <div class="subjects-grid" id="subjects-container">
-            <p style="color: var(--text-muted);">Завантаження дисциплін...</p>
+            <p style="color: var(--text-muted);">Завантаження предметів...</p>
         </div>
 
         <!-- СЕКЦІЯ МАТЕРІАЛІВ -->
@@ -284,14 +424,14 @@
                 </select>
             </div>
             <div class="filter-group">
-                <label for="filter-type">Тип завдань:</label>
+                <label for="filter-type">Тип матеріалу:</label>
                 <select id="filter-type" onchange="applyFilters()">
                     <option value="ALL">Всі типи</option>
                 </select>
             </div>
         </div>
 
-        <!-- Список матеріалів -->
+        <!-- Список лекцій -->
         <div class="lessons-list" id="lessons-container">
             <p style="color: var(--text-muted);">Завантаження матеріалів...</p>
         </div>
@@ -345,13 +485,13 @@
 
         async function fetchSiteData() {
             try {
-                // 1. Отримання Портфоліо
+                // 1. Портфоліо
                 const pUrl = `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "portfolio"][0]')}`;
                 const pRes = await fetch(pUrl);
                 const pData = await pRes.json();
                 if (pData.result) renderPortfolioModal(pData.result);
 
-                // 2. Отримання Дисциплін
+                // 2. Дисципліни
                 const sUrl = `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "subject"]')}`;
                 const sRes = await fetch(sUrl);
                 const sData = await sRes.json();
@@ -359,14 +499,14 @@
                 renderSubjects(allSubjects);
                 populateSubjectFilter(allSubjects);
 
-                // 3. Отримання Типів матеріалів
+                // 3. Типи матеріалів
                 const tUrl = `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "taskType"]')}`;
                 const tRes = await fetch(tUrl);
                 const tData = await tRes.json();
                 allTaskTypes = tData.result || [];
                 populateTypeFilter(allTaskTypes);
 
-                // 4. Отримання Лекцій/Завдань
+                // 4. Лекції та завдання
                 const lUrl = `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "lesson"]')}`;
                 const lRes = await fetch(lUrl);
                 const lData = await lRes.json();
@@ -374,7 +514,7 @@
                 renderLessons(allLessons);
 
             } catch (err) {
-                console.error("Помилка при завантаженні даних:", err);
+                console.error("Помилка завантаження даних:", err);
             }
         }
 
@@ -425,7 +565,7 @@
             `).join('');
         }
 
-        /* --- ФІЛЬТРИ ТА ВІДОБРАЖЕННЯ МАТЕРІАЛІВ --- */
+        /* --- ФІЛЬТРИ ТА ЛЕКЦІЇ --- */
         function populateSubjectFilter(subjects) {
             const select = document.getElementById('filter-discipline');
             subjects.forEach(s => {
@@ -467,7 +607,7 @@
         function renderLessons(lessons) {
             const container = document.getElementById('lessons-container');
             if (lessons.length === 0) {
-                container.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding: 30px 0;">За вашим запитом матеріалів не знайдено.</p>';
+                container.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding: 30px 0;">За обраними фільтрами матеріалів не знайдено.</p>';
                 return;
             }
 
