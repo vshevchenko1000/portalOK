@@ -17,50 +17,56 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg-color); color: #0f172a; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; }
+        .container { max-width: 950px; margin: 0 auto; }
         
         header {
             background: var(--deep-blue); color: white; padding: 20px 28px; border-radius: 14px;
             margin-bottom: 24px; border-bottom: 4px solid var(--bright-blue);
-            display: flex; justify-content: space-between; align-items: center; shadow: var(--shadow);
+            display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow);
         }
         
         .card { background: white; padding: 28px; border-radius: 14px; border: 1px solid var(--border-color); margin-bottom: 24px; box-shadow: var(--shadow); }
         .card h2 { color: var(--deep-blue); font-size: 1.25rem; margin-bottom: 18px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
         
         .form-group { margin-bottom: 18px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; color: #334155; }
         input, select, textarea {
             width: 100%; padding: 12px 14px; border: 1.5px solid var(--border-color);
             border-radius: 10px; font-size: 0.95rem; font-family: inherit; transition: all 0.2s;
         }
+        input[type="color"] { height: 48px; padding: 4px; cursor: pointer; }
         input:focus, select:focus, textarea:focus { outline: none; border-color: var(--bright-blue); box-shadow: 0 0 0 3px rgba(0, 163, 255, 0.15); }
-        textarea { height: 110px; resize: vertical; }
+        textarea { height: 100px; resize: vertical; }
 
-        /* Кнопкова палітра вибору іконок */
-        .icon-picker { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+        /* Іконки */
+        .icon-picker { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
         .icon-opt {
-            width: 48px; height: 48px; font-size: 1.4rem; border: 2px solid var(--border-color);
-            background: #f8fafc; border-radius: 10px; cursor: pointer; transition: all 0.2s ease;
+            width: 44px; height: 44px; font-size: 1.3rem; border: 2px solid var(--border-color);
+            background: #f8fafc; border-radius: 10px; cursor: pointer; transition: all 0.2s;
             display: flex; align-items: center; justify-content: center;
         }
-        .icon-opt:hover { border-color: var(--bright-blue); background: #f0f9ff; transform: translateY(-2px); }
-        .icon-opt.active { border-color: var(--bright-blue); background: #e0f2fe; box-shadow: 0 0 0 3px rgba(0,163,255,0.25); transform: scale(1.05); }
+        .icon-opt:hover, .icon-opt.active { border-color: var(--bright-blue); background: #e0f2fe; transform: scale(1.05); }
 
         .btn {
-            background: var(--bright-blue); color: white; border: none; padding: 12px 24px;
-            border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; font-size: 0.95rem;
+            background: var(--bright-blue); color: white; border: none; padding: 12px 22px;
+            border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-size: 0.95rem;
+            display: inline-flex; align-items: center; gap: 6px;
         }
         .btn:hover { background: #008cdb; transform: translateY(-1px); }
-        .btn-danger { background: #fee2e2; color: var(--danger); border: 1px solid #fca5a5; padding: 6px 14px; font-size: 0.85rem; border-radius: 8px; }
+        .btn-secondary { background: #64748b; }
+        .btn-secondary:hover { background: #475569; }
+        .btn-danger { background: #fee2e2; color: var(--danger); border: 1px solid #fca5a5; padding: 6px 12px; font-size: 0.85rem; border-radius: 8px; }
         .btn-danger:hover { background: var(--danger); color: white; }
+        .btn-edit { background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; padding: 6px 12px; font-size: 0.85rem; border-radius: 8px; margin-right: 6px; }
+        .btn-edit:hover { background: #0284c7; color: white; }
 
         .list-item {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 14px 18px; background: #f8fafc; border: 1px solid var(--border-color);
-            border-radius: 10px; margin-bottom: 10px; transition: all 0.2s;
+            padding: 12px 16px; background: #f8fafc; border: 1px solid var(--border-color);
+            border-radius: 10px; margin-bottom: 8px; transition: all 0.2s;
         }
-        .list-item:hover { background: white; border-color: #cbd5e1; }
+        .color-badge { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; margin-right: 6px; }
     </style>
 </head>
 <body>
@@ -68,13 +74,13 @@
 <div class="container">
     <header>
         <div>
-            <h1>⚙️ Панель керування порталом</h1>
+            <h1>⚙️ Панель керування контентом</h1>
             <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 4px;">Дніпровський фаховий коледж радіоелектроніки</p>
         </div>
         <a href="index.html" target="_blank" style="color: var(--bright-blue); text-decoration: none; font-weight: 600; background: rgba(255,255,255,0.1); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);">Перейти на сайт ↗</a>
     </header>
 
-    <!-- Токен авторизації -->
+    <!-- Токен -->
     <div class="card" style="background: #eff6ff; border-color: #bfdbfe;">
         <div class="form-group" style="margin: 0;">
             <label for="token">🔑 Sanity API Write Token (необхідний для збереження змін):</label>
@@ -82,17 +88,81 @@
         </div>
     </div>
 
-    <!-- 1. СТВОРЕННЯ ДИСЦИПЛІНИ -->
+    <!-- 1. НАЛАШТУВАННЯ ПОРТФОЛІО ТА ДИЗАЙНУ -->
     <div class="card">
-        <h2>📚 1. Додати нову дисципліну</h2>
-        <form id="discipline-form">
-            <div class="form-group">
-                <label>Назва дисципліни:</label>
-                <input type="text" id="disc-title" placeholder="напр. Інформатика & Інтернет-технології" required>
+        <h2>👤 1. Редагування Портфоліо та Стилю</h2>
+        <form id="portfolio-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>ПІБ / Заголовок:</label>
+                    <input type="text" id="port-name" placeholder="напр. Іванов Іван Іванович" required>
+                </div>
+                <div class="form-group">
+                    <label>Посада / Статус:</label>
+                    <input type="text" id="port-role" placeholder="напр. Викладач спецдисциплін" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Аватар (Емодзі):</label>
+                    <input type="text" id="port-avatar" value="👨‍🏫" required>
+                </div>
+                <div class="form-group">
+                    <label>Основний колір вивіски/картки:</label>
+                    <input type="color" id="port-color" value="#00a3ff">
+                </div>
             </div>
 
             <div class="form-group">
-                <label>Оберіть іконку кнопкою:</label>
+                <label>Опис / Біографія:</label>
+                <textarea id="port-bio" placeholder="Вітаємо! На цьому порталі зібрано матеріали з..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Контактна інформація:</label>
+                <input type="text" id="port-contacts" placeholder="Кабінет 304 | teacher@dfkr.edu.ua">
+            </div>
+
+            <button type="submit" class="btn">💾 Зберегти Портфоліо</button>
+        </form>
+    </div>
+
+    <!-- 2. РЕДАГУВАННЯ ТИПІВ ЗАВДАНЬ -->
+    <div class="card">
+        <h2>🏷️ 2. Управління типами завдань та кольоровою гамою</h2>
+        <form id="tasktype-form">
+            <input type="hidden" id="tasktype-id">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Назва типу завдання:</label>
+                    <input type="text" id="tasktype-title" placeholder="напр. Лабораторна робота" required>
+                </div>
+                <div class="form-group">
+                    <label>Колір для типу (бекграунд бейджа):</label>
+                    <input type="color" id="tasktype-color" value="#e0f2fe">
+                </div>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button type="submit" class="btn" id="tasktype-btn">➕ Додати тип завдання</button>
+                <button type="button" class="btn btn-secondary" id="tasktype-cancel" style="display:none;" onclick="resetTaskTypeForm()">Скасувати</button>
+            </div>
+        </form>
+
+        <h3 style="margin-top: 20px; font-size: 1rem; color: var(--deep-blue);">Існуючі типи завдань:</h3>
+        <div id="tasktypes-list" style="margin-top: 10px;">Завантаження...</div>
+    </div>
+
+    <!-- 3. СТВОРЕННЯ ДИСЦИПЛІНИ -->
+    <div class="card">
+        <h2>📚 3. Управління дисциплінами</h2>
+        <form id="discipline-form">
+            <div class="form-group">
+                <label>Назва дисципліни:</label>
+                <input type="text" id="disc-title" placeholder="напр. Інформатика" required>
+            </div>
+            <div class="form-group">
+                <label>Оберіть іконку:</label>
                 <div class="icon-picker" id="icon-picker">
                     <button type="button" class="icon-opt active" data-icon="💻">💻</button>
                     <button type="button" class="icon-opt" data-icon="⚡">⚡</button>
@@ -102,53 +172,56 @@
                     <button type="button" class="icon-opt" data-icon="🛠️">🛠️</button>
                     <button type="button" class="icon-opt" data-icon="📐">📐</button>
                     <button type="button" class="icon-opt" data-icon="📡">📡</button>
-                    <button type="button" class="icon-opt" data-icon="📱">📱</button>
-                    <button type="button" class="icon-opt" data-icon="🔬">🔬</button>
-                    <button type="button" class="icon-opt" data-icon="📊">📊</button>
-                    <button type="button" class="icon-opt" data-icon="🎓">🎓</button>
-                    <button type="button" class="icon-opt" data-icon="📖">📖</button>
                 </div>
                 <input type="hidden" id="disc-icon" value="💻">
             </div>
-
             <div class="form-group">
-                <label>Короткий опис дисципліни:</label>
-                <input type="text" id="disc-desc" placeholder="Опишіть стисло, про що цей предмет..." required>
+                <label>Опис дисципліни:</label>
+                <input type="text" id="disc-desc" placeholder="Стислий опис..." required>
             </div>
             <button type="submit" class="btn">➕ Створити дисципліну</button>
         </form>
 
-        <h3 style="margin-top: 24px; font-size: 1rem; color: var(--deep-blue);">Наявні дисципліни:</h3>
-        <div id="disciplines-list" style="margin-top: 12px;">Завантаження...</div>
+        <h3 style="margin-top: 20px; font-size: 1rem; color: var(--deep-blue);">Існуючі дисципліни:</h3>
+        <div id="disciplines-list" style="margin-top: 10px;">Завантаження...</div>
     </div>
 
-    <!-- 2. СТВОРЕННЯ ЛЕКЦІЇ -->
+    <!-- 4. СТВОРЕННЯ ЛЕКЦІЇ -->
     <div class="card">
-        <h2>📝 2. Опублікувати навчальний матеріал</h2>
+        <h2>📝 4. Опублікувати матеріал</h2>
         <form id="lesson-form">
-            <div class="form-group">
-                <label>Дисципліна:</label>
-                <select id="lesson-discipline" required>
-                    <option value="">-- Оберіть предмет із базі --</option>
-                </select>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Дисципліна:</label>
+                    <select id="lesson-discipline" required>
+                        <option value="">-- Завантаження... --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Тип завдання:</label>
+                    <select id="lesson-tasktype" required>
+                        <option value="">-- Завантаження... --</option>
+                    </select>
+                </div>
             </div>
+
             <div class="form-group">
                 <label>Тема / Назва матеріалу:</label>
-                <input type="text" id="lesson-title" placeholder="Тема 1. Вступний огляд" required>
+                <input type="text" id="lesson-title" placeholder="Лекція 1. Вступ..." required>
             </div>
             <div class="form-group">
-                <label>Текст / Зміст лекції:</label>
-                <textarea id="lesson-content" placeholder="Введіть навчальний матеріал або інструкцію..."></textarea>
+                <label>Текст матеріалу:</label>
+                <textarea id="lesson-content" placeholder="Введіть навчальний матеріал..."></textarea>
             </div>
             <div class="form-group">
-                <label>Посилання на файл (Google Drive / PDF / ZIP):</label>
+                <label>Посилання на файл (Google Drive / PDF):</label>
                 <input type="url" id="lesson-url" placeholder="https://drive.google.com/...">
             </div>
             <button type="submit" class="btn">🚀 Опублікувати матеріал</button>
         </form>
 
-        <h3 style="margin-top: 24px; font-size: 1rem; color: var(--deep-blue);">Опубліковані матеріали:</h3>
-        <div id="lessons-list" style="margin-top: 12px;">Завантаження...</div>
+        <h3 style="margin-top: 20px; font-size: 1rem; color: var(--deep-blue);">Опубліковані матеріали:</h3>
+        <div id="lessons-list" style="margin-top: 10px;">Завантаження...</div>
     </div>
 </div>
 
@@ -158,7 +231,7 @@
 
     document.getElementById('token').value = localStorage.getItem('sanity_token') || '';
 
-    // Логіка вибору іконки кнопками
+    // Іконки
     document.querySelectorAll('.icon-opt').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.icon-opt').forEach(b => b.classList.remove('active'));
@@ -173,7 +246,31 @@
         return t;
     }
 
+    let allTaskTypes = [];
+
+    // --- ЗАВАНТАЖЕННЯ ВСІХ ДАНИХ ---
     async function loadData() {
+        // Портфоліо
+        const portQuery = encodeURIComponent('*[_type == "portfolio"][0]');
+        const portRes = await fetch(`https://${PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${DATASET}?query=${portQuery}`);
+        const portData = await portRes.json();
+        if(portData.result) {
+            const p = portData.result;
+            document.getElementById('port-name').value = p.name || '';
+            document.getElementById('port-role').value = p.role || '';
+            document.getElementById('port-avatar').value = p.avatar || '👨‍🏫';
+            document.getElementById('port-color').value = p.color || '#00a3ff';
+            document.getElementById('port-bio').value = p.bio || '';
+            document.getElementById('port-contacts').value = p.contacts || '';
+        }
+
+        // Типи завдань
+        const ttQuery = encodeURIComponent('*[_type == "taskType"]');
+        const ttRes = await fetch(`https://${PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${DATASET}?query=${ttQuery}`);
+        const ttData = await ttRes.json();
+        allTaskTypes = ttData.result || [];
+        renderTaskTypes(allTaskTypes);
+
         // Дисципліни
         const discQuery = encodeURIComponent('*[_type == "subject"]');
         const discRes = await fetch(`https://${PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${DATASET}?query=${discQuery}`);
@@ -187,47 +284,128 @@
         renderLessons(lessonData.result || []);
     }
 
+    // --- ПОРТФОЛІО (Збереження) ---
+    document.getElementById('portfolio-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const token = getToken(); if(!token) return;
+
+        const doc = {
+            mutations: [{
+                createOrReplace: {
+                    _id: 'portfolio-doc',
+                    _type: 'portfolio',
+                    name: document.getElementById('port-name').value,
+                    role: document.getElementById('port-role').value,
+                    avatar: document.getElementById('port-avatar').value,
+                    color: document.getElementById('port-color').value,
+                    bio: document.getElementById('port-bio').value,
+                    contacts: document.getElementById('port-contacts').value
+                }
+            }]
+        };
+
+        const res = await fetch(`https://${PROJECT_ID}.api.sanity.io/v2021-06-07/data/mutate/${DATASET}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(doc)
+        });
+
+        if(res.ok) alert('🎉 Портфоліо успішно збережено!');
+        else alert('Помилка збереження портфоліо!');
+    });
+
+    // --- ТИПИ ЗАВДАНЬ ---
+    function renderTaskTypes(items) {
+        const list = document.getElementById('tasktypes-list');
+        const select = document.getElementById('lesson-tasktype');
+
+        if(items.length === 0) {
+            list.innerHTML = '<p style="color: #64748b; font-size: 0.9rem;">Типів завдань ще немає.</p>';
+            select.innerHTML = '<option value="">-- Створіть спочатку тип завдання --</option>';
+            return;
+        }
+
+        select.innerHTML = items.map(t => `<option value="${t.title}">${t.title}</option>`).join('');
+        list.innerHTML = items.map(t => `
+            <div class="list-item">
+                <div>
+                    <span class="color-badge" style="background: ${t.color || '#00a3ff'};"></span>
+                    <strong>${t.title}</strong>
+                </div>
+                <div>
+                    <button class="btn-edit" onclick="editTaskType('${t._id}', '${escapeJs(t.title)}', '${t.color || '#00a3ff'}')">✏️ Редагувати</button>
+                    <button class="btn btn-danger" onclick="deleteDoc('${t._id}')">Видалити</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function editTaskType(id, title, color) {
+        document.getElementById('tasktype-id').value = id;
+        document.getElementById('tasktype-title').value = title;
+        document.getElementById('tasktype-color').value = color;
+        document.getElementById('tasktype-btn').innerText = '💾 Оновити тип';
+        document.getElementById('tasktype-cancel').style.display = 'inline-flex';
+    }
+
+    function resetTaskTypeForm() {
+        document.getElementById('tasktype-id').value = '';
+        document.getElementById('tasktype-title').value = '';
+        document.getElementById('tasktype-color').value = '#e0f2fe';
+        document.getElementById('tasktype-btn').innerText = '➕ Додати тип завдання';
+        document.getElementById('tasktype-cancel').style.display = 'none';
+    }
+
+    document.getElementById('tasktype-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const token = getToken(); if(!token) return;
+
+        const id = document.getElementById('tasktype-id').value;
+        const title = document.getElementById('tasktype-title').value;
+        const color = document.getElementById('tasktype-color').value;
+
+        let doc;
+        if(id) {
+            doc = { mutations: [{ patch: { id: id, set: { title: title, color: color } } }] };
+        } else {
+            doc = { mutations: [{ create: { _type: 'taskType', title: title, color: color } }] };
+        }
+
+        const res = await fetch(`https://${PROJECT_ID}.api.sanity.io/v2021-06-07/data/mutate/${DATASET}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(doc)
+        });
+
+        if(res.ok) {
+            resetTaskTypeForm();
+            loadData();
+        } else alert('Помилка збереження!');
+    });
+
+    // --- ДИСЦИПЛІНИ ---
     function renderDisciplines(items) {
         const select = document.getElementById('lesson-discipline');
         const list = document.getElementById('disciplines-list');
 
         if(items.length === 0) {
-            select.innerHTML = '<option value="">Дисциплін ще немає. Створіть першу вище!</option>';
-            list.innerHTML = '<p style="color: #64748b; font-size: 0.9rem;">Дисциплін поки немає в базі.</p>';
+            select.innerHTML = '<option value="">Немає дисциплін.</option>';
+            list.innerHTML = '<p style="color: #64748b; font-size: 0.9rem;">Дисциплін немає.</p>';
             return;
         }
 
         select.innerHTML = items.map(d => `<option value="${d.title}">${d.icon || '📚'} ${d.title}</option>`).join('');
         list.innerHTML = items.map(d => `
             <div class="list-item">
-                <div><strong>${d.icon || '📚'} ${d.title}</strong> <span style="color:#64748b; font-size:0.85rem;">— ${d.desc || ''}</span></div>
+                <div><strong>${d.icon || '📚'} ${d.title}</strong> — <span style="color:#64748b; font-size:0.85rem;">${d.desc || ''}</span></div>
                 <button class="btn btn-danger" onclick="deleteDoc('${d._id}')">Видалити</button>
             </div>
         `).join('');
     }
 
-    function renderLessons(items) {
-        const list = document.getElementById('lessons-list');
-        if(items.length === 0) {
-            list.innerHTML = '<p style="color: #64748b; font-size: 0.9rem;">Матеріалів поки немає в базі.</p>';
-            return;
-        }
-
-        list.innerHTML = items.map(l => `
-            <div class="list-item">
-                <div>
-                    <strong style="color: var(--bright-blue);">[${l.discipline || 'Загальне'}]</strong> ${l.title}
-                </div>
-                <button class="btn btn-danger" onclick="deleteDoc('${l._id}')">Видалити</button>
-            </div>
-        `).join('');
-    }
-
-    // Створення дисципліни
     document.getElementById('discipline-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const token = getToken();
-        if(!token) return;
+        const token = getToken(); if(!token) return;
 
         const doc = {
             mutations: [{
@@ -247,24 +425,42 @@
         });
 
         if(res.ok) {
-            alert('🎉 Дисципліну успішно додано!');
             document.getElementById('disc-title').value = '';
             document.getElementById('disc-desc').value = '';
             loadData();
-        } else { alert('Помилка! Перевірте правильність токена!'); }
+        }
     });
 
-    // Створення лекції
+    // --- ЛЕКЦІЇ ---
+    function renderLessons(items) {
+        const list = document.getElementById('lessons-list');
+        if(items.length === 0) {
+            list.innerHTML = '<p style="color: #64748b; font-size: 0.9rem;">Матеріалів немає.</p>';
+            return;
+        }
+
+        list.innerHTML = items.map(l => `
+            <div class="list-item">
+                <div>
+                    <strong style="color: var(--bright-blue);">[${l.discipline || 'Загальне'}]</strong> 
+                    <span style="font-size:0.85rem; background:#e2e8f0; padding:2px 6px; border-radius:4px; margin:0 6px;">${l.taskType || 'Матеріал'}</span>
+                    ${l.title}
+                </div>
+                <button class="btn btn-danger" onclick="deleteDoc('${l._id}')">Видалити</button>
+            </div>
+        `).join('');
+    }
+
     document.getElementById('lesson-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const token = getToken();
-        if(!token) return;
+        const token = getToken(); if(!token) return;
 
         const doc = {
             mutations: [{
                 create: {
                     _type: 'lesson',
                     discipline: document.getElementById('lesson-discipline').value,
+                    taskType: document.getElementById('lesson-tasktype').value,
                     title: document.getElementById('lesson-title').value,
                     content: document.getElementById('lesson-content').value,
                     fileUrl: document.getElementById('lesson-url').value,
@@ -280,12 +476,11 @@
         });
 
         if(res.ok) {
-            alert('🎉 Матеріал опубліковано!');
             document.getElementById('lesson-title').value = '';
             document.getElementById('lesson-content').value = '';
             document.getElementById('lesson-url').value = '';
             loadData();
-        } else { alert('Помилка збереження! Перевірте токен!'); }
+        }
     });
 
     async function deleteDoc(id) {
@@ -293,14 +488,15 @@
         if(!token || !confirm('Дійсно видалити цей елемент?')) return;
 
         const doc = { mutations: [{ delete: { id: id } }] };
-        const res = await fetch(`https://${PROJECT_ID}.api.sanity.io/v2021-06-07/data/mutate/${DATASET}`, {
+        await fetch(`https://${PROJECT_ID}.api.sanity.io/v2021-06-07/data/mutate/${DATASET}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify(doc)
         });
-
-        if(res.ok) loadData();
+        loadData();
     }
+
+    function escapeJs(str) { return (str || '').replace(/'/g, "\\'"); }
 
     loadData();
 </script>
