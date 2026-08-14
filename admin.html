@@ -6,13 +6,15 @@
     <title>Панель управління — ДФКР</title>
     <style>
         :root {
-            --deep-blue: #001b4c;
-            --bright-blue: #00a3ff;
+            --deep-blue: #0f172a;
+            --bright-blue: #0284c7;
+            --bright-blue-hover: #0369a1;
             --bg-color: #f8fafc;
             --card-bg: #ffffff;
             --border-color: #e2e8f0;
             --text-main: #0f172a;
             --danger-red: #ef4444;
+            --radius: 12px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -21,25 +23,26 @@
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            padding: 20px;
+            padding: 25px 20px;
         }
 
+        /* Шапка адмінки */
         .admin-header {
             max-width: 900px;
-            margin: 0 auto 20px auto;
-            background: var(--deep-blue);
+            margin: 0 auto 25px auto;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             color: white;
-            padding: 20px 25px;
-            border-radius: 16px;
+            padding: 22px 28px;
+            border-radius: var(--radius);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 10px 20px rgba(0,27,76,0.15);
+            box-shadow: 0 10px 25px rgba(15,23,42,0.15);
         }
 
         .token-box {
             background: rgba(255,255,255,0.1);
-            padding: 8px 12px;
+            padding: 8px 14px;
             border-radius: 8px;
             display: flex;
             align-items: center;
@@ -58,6 +61,7 @@
 
         .token-box input::placeholder { color: #94a3b8; }
 
+        /* Навігація вкладок */
         .tabs-nav {
             max-width: 900px;
             margin: 0 auto 20px auto;
@@ -68,32 +72,35 @@
 
         .tab-btn {
             background: white;
-            border: 2px solid var(--border-color);
-            padding: 10px 18px;
+            border: 1.5px solid var(--border-color);
+            padding: 11px 20px;
             border-radius: 10px;
             font-weight: 600;
             font-size: 0.95rem;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             gap: 8px;
+            color: var(--text-main);
         }
 
-        .tab-btn:hover { border-color: var(--bright-blue); }
+        .tab-btn:hover { border-color: var(--bright-blue); color: var(--bright-blue); }
         .tab-btn.active {
             background: var(--deep-blue);
             color: white;
             border-color: var(--deep-blue);
+            box-shadow: 0 4px 12px rgba(15,23,42,0.15);
         }
 
+        /* Контент вкладок */
         .tab-content {
             max-width: 900px;
             margin: 0 auto;
             background: var(--card-bg);
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-radius: var(--radius);
+            padding: 28px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
             border: 1px solid var(--border-color);
             display: none;
         }
@@ -104,20 +111,23 @@
 
         label {
             display: block;
-            font-weight: 600;
-            font-size: 0.9rem;
+            font-weight: 700;
+            font-size: 0.85rem;
             margin-bottom: 6px;
             color: var(--deep-blue);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
         }
 
         input[type="text"], textarea, select {
             width: 100%;
-            padding: 10px 14px;
+            padding: 11px 15px;
             border: 1.5px solid var(--border-color);
             border-radius: 8px;
             font-size: 0.95rem;
             font-family: inherit;
             transition: border-color 0.2s;
+            background: #fff;
         }
 
         input[type="text"]:focus, textarea:focus, select:focus {
@@ -125,7 +135,7 @@
             border-color: var(--bright-blue);
         }
 
-        textarea { resize: vertical; min-height: 80px; }
+        textarea { resize: vertical; min-height: 90px; }
 
         .hint { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
 
@@ -133,28 +143,32 @@
             background: var(--bright-blue);
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 12px 26px;
             border-radius: 8px;
             font-size: 0.95rem;
             font-weight: 700;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.1s;
         }
 
-        .btn-action:hover { background: #008be6; }
+        .btn-action:hover {
+            background: var(--bright-blue-hover);
+            transform: translateY(-1px);
+        }
 
+        /* Список створених елементів */
         .items-list {
-            margin-top: 25px;
+            margin-top: 30px;
             border-top: 2px dashed var(--border-color);
-            padding-top: 20px;
+            padding-top: 22px;
         }
 
         .item-card {
             background: #f8fafc;
             border: 1px solid var(--border-color);
             border-radius: 10px;
-            padding: 12px 16px;
-            margin-bottom: 10px;
+            padding: 14px 18px;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -164,9 +178,9 @@
             background: #fee2e2;
             color: var(--danger-red);
             border: none;
-            padding: 6px 12px;
+            padding: 7px 14px;
             border-radius: 6px;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.85rem;
             cursor: pointer;
             transition: background 0.2s;
@@ -174,15 +188,16 @@
 
         .btn-delete:hover { background: #fca5a5; }
 
+        /* Повідомлення про статус */
         .status-msg {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 12px 20px;
+            bottom: 25px;
+            right: 25px;
+            padding: 14px 22px;
             border-radius: 10px;
-            font-weight: 600;
+            font-weight: 700;
             display: none;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             z-index: 1000;
         }
 
@@ -213,7 +228,7 @@
 
     <!-- 1. ПОРТФОЛІО ВИКЛАДАЧА -->
     <div id="tab-portfolio" class="tab-content active">
-        <h3 style="margin-bottom: 15px; color: var(--deep-blue);">Редагування Портфоліо Викладача</h3>
+        <h3 style="margin-bottom: 18px; color: var(--deep-blue);">Редагування Портфоліо Викладача</h3>
         <form onsubmit="savePortfolio(event)">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <div class="form-group">
@@ -257,9 +272,9 @@
         </form>
     </div>
 
-    <!-- 2. ДИСЦИПЛІНИ (ПРЕДМЕТИ) -->
+    <!-- 2. ДИСЦИПЛІНИ -->
     <div id="tab-subjects" class="tab-content">
-        <h3 style="margin-bottom: 15px; color: var(--deep-blue);">Управління Дисциплінами</h3>
+        <h3 style="margin-bottom: 18px; color: var(--deep-blue);">Управління Дисциплінами</h3>
         <form onsubmit="addSubject(event)">
             <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 15px;">
                 <div class="form-group">
@@ -279,14 +294,14 @@
         </form>
 
         <div class="items-list">
-            <h4 style="margin-bottom: 12px; color: var(--deep-blue);">Існуючі дисципліни:</h4>
+            <h4 style="margin-bottom: 14px; color: var(--deep-blue);">Існуючі дисципліни:</h4>
             <div id="subjects-admin-list">Завантаження...</div>
         </div>
     </div>
 
-    <!-- 3. ТИПИ ЗАВДАНЬ / МАТЕРІАЛІВ -->
+    <!-- 3. ТИПИ ЗАВДАНЬ -->
     <div id="tab-types" class="tab-content">
-        <h3 style="margin-bottom: 15px; color: var(--deep-blue);">Управління Типами Матеріалів</h3>
+        <h3 style="margin-bottom: 18px; color: var(--deep-blue);">Управління Типами Матеріалів</h3>
         <form onsubmit="addTaskType(event)">
             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
                 <div class="form-group">
@@ -302,14 +317,14 @@
         </form>
 
         <div class="items-list">
-            <h4 style="margin-bottom: 12px; color: var(--deep-blue);">Існуючі типи:</h4>
+            <h4 style="margin-bottom: 14px; color: var(--deep-blue);">Існуючі типи:</h4>
             <div id="types-admin-list">Завантаження...</div>
         </div>
     </div>
 
-    <!-- 4. ЛЕКЦІЇ ТА МАТЕРІАЛИ -->
+    <!-- 4. ЛЕКЦІЇ -->
     <div id="tab-lessons" class="tab-content">
-        <h3 style="margin-bottom: 15px; color: var(--deep-blue);">Додавання Нової Лекції / Завдання</h3>
+        <h3 style="margin-bottom: 18px; color: var(--deep-blue);">Додавання Нової Лекції / Завдання</h3>
         <form onsubmit="addLesson(event)">
             <div class="form-group">
                 <label>Тема / Назва матеріалу:</label>
@@ -345,7 +360,7 @@
         </form>
 
         <div class="items-list">
-            <h4 style="margin-bottom: 12px; color: var(--deep-blue);">Опубліковані матеріали:</h4>
+            <h4 style="margin-bottom: 14px; color: var(--deep-blue);">Опубліковані матеріали:</h4>
             <div id="lessons-admin-list">Завантаження...</div>
         </div>
     </div>
