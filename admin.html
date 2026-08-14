@@ -26,7 +26,7 @@
         label {
             display: block;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
         input[type="password"] {
             width: 100%;
@@ -49,7 +49,7 @@
             gap: 8px;
         }
         button {
-            padding: 8px 16px;
+            padding: 10px 18px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
@@ -58,31 +58,16 @@
             transition: opacity 0.2s;
         }
         button:hover { opacity: 0.9; }
-        .btn-primary { background: #2276fc; color: white; }
-        .btn-edit { background: #f0f4ff; color: #2276fc; border: 1px solid #d0e0ff; }
-        .btn-danger { background: #ffebee; color: #e53935; border: 1px solid #ffcdd2; }
+        .btn-primary { 
+            background: #2276fc; 
+            color: white; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px; 
+        }
 
         .materials-list {
             margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .material-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            border: 1px solid #f0f0f0;
-            border-radius: 8px;
-            background: #fafafa;
-        }
-        .material-title {
-            font-weight: 500;
-        }
-        .actions {
-            display: flex;
-            gap: 8px;
         }
     </style>
 </head>
@@ -116,7 +101,6 @@
         const tokenInput = document.getElementById('sanityToken');
         const container = document.getElementById('materialsContainer');
 
-        // Автозавантаження та збереження токена
         document.addEventListener('DOMContentLoaded', () => {
             const savedToken = localStorage.getItem('sanityToken');
             if (savedToken) tokenInput.value = savedToken;
@@ -131,7 +115,6 @@
             return localStorage.getItem('sanityToken') || tokenInput.value.trim();
         }
 
-        // 1. Отримання матеріалів з Sanity
         async function loadMaterials() {
             const token = getToken();
             if (!token) {
@@ -158,107 +141,17 @@
             }
         }
 
-        // 2. Відображення карток матеріалів
         function renderMaterials(items) {
             if (items.length === 0) {
                 container.innerHTML = '<p style="color: #888;">Матеріалів не знайдено.</p>';
                 return;
             }
 
-            container.innerHTML = items.map(item => {
-                const text = item.title || item.name || 'Без назви';
-                // Екрануємо лапки для передачі в onclick
-                const safeText = text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                
-                return `
-                    <div class="material-item" id="doc-${item._id}">
-                        <span class="material-title" id="title-${item._id}">${text}</span>
-                        <div class="actions">
-                            <button class="btn-edit" onclick="editText('${item._id}', '${safeText}')">✏️ Редагувати</button>
-                            <button class="btn-danger" onclick="deleteMaterial('${item._id}')">🗑️ Видалити</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // 3. Редагування тексту матеріалу
-        async function editText(documentId, currentText) {
-            const token = getToken();
-            if (!token) return alert('Помилка: Токен відсутній!');
-
-            const newText = prompt('Введіть новий текст для матеріалу:', currentText);
-            
-            // Якщо натиснули Скасувати або залишили порожнім
-            if (newText === null || newText.trim() === '' || newText === currentText) return;
-
-            const url = `https://${PROJECT_ID}.api.sanity.io/${API_VERSION}/data/mutate/${DATASET}`;
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        mutations: [
-                            {
-                                patch: {
-                                    id: documentId,
-                                    set: { title: newText }
-                                }
-                            }
-                        ]
-                    })
-                });
-
-                if (response.ok) {
-                    // Оновлюємо текст прямо на сторінці
-                    const textEl = document.getElementById(`title-${documentId}`);
-                    if (textEl) textEl.textContent = newText;
-                } else {
-                    const data = await response.json();
-                    alert(`Помилка оновлення: ${data.error?.description || 'Перевірте токен'}`);
-                }
-            } catch (err) {
-                alert('Не вдалося виконати запит.');
-            }
-        }
-
-        // 4. Видалення матеріалу
-        async function deleteMaterial(documentId) {
-            const token = getToken();
-            if (!token) return alert('Помилка: Токен відсутній!');
-
-            if (!confirm('Ви впевнені, що хочете видалити цей матеріал?')) return;
-
-            const url = `https://${PROJECT_ID}.api.sanity.io/${API_VERSION}/data/mutate/${DATASET}`;
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        mutations: [
-                            { delete: { id: documentId } }
-                        ]
-                    })
-                });
-
-                if (response.ok) {
-                    const element = document.getElementById(`doc-${documentId}`);
-                    if (element) element.remove();
-                } else {
-                    const data = await response.json();
-                    alert(`Помилка видалення: ${data.error?.description || 'Перевірте токен'}`);
-                }
-            } catch (err) {
-                alert('Не вдалося виконати запит.');
-            }
+            container.innerHTML = items.map(item => `
+                <div style="padding: 10px 0; border-bottom: 1px solid #eee;">
+                    <strong>${item.title || item.name || 'Без назви'}</strong>
+                </div>
+            `).join('');
         }
     </script>
 
