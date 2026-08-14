@@ -391,10 +391,12 @@
 			let activeFilter = 'ALL';
 
 			async function loadPortalData() {
-				const ts = Date.now(); // Запобігаємо кешуванню браузера
 				try {
 					// 1. Портфоліо
-					const pRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "portfolio"][0]')}&_ts=${ts}`);
+					const pRes = await fetch(
+						`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "portfolio"][0]')}`,
+						{ cache: 'no-store' }
+					);
 					const pData = await pRes.json();
 					if(pData.result) {
 						portfolioData = pData.result;
@@ -402,27 +404,36 @@
 					}
 
 					// 2. Типи завдань
-					const ttRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "taskType"]')}&_ts=${ts}`);
+					const ttRes = await fetch(
+						`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "taskType"]')}`,
+						{ cache: 'no-store' }
+					);
 					const ttData = await ttRes.json();
 					taskTypesList = ttData.result || [];
 
-					// 3. Дисципліни (З підтримкою і звичайних посилань, і PDF-файлів із Sanity)
+					// 3. Дисципліни
 					const subGROQ = `*[_type == "subject"]{
 						...,
-						"syllabusUrl": select(defined(syllabusUrl) => syllabusUrl, defined(syllabus.asset) => syllabus.asset->url, null),
-						"workProgramUrl": select(defined(workProgramUrl) => workProgramUrl, defined(workProgram.asset) => workProgram.asset->url, null),
-						"studyProgramUrl": select(defined(studyProgramUrl) => studyProgramUrl, defined(studyProgram.asset) => studyProgram.asset->url, null)
+						"syllabusUrl": coalesce(syllabusUrl, syllabus.asset->url),
+						"workProgramUrl": coalesce(workProgramUrl, workProgram.asset->url),
+						"studyProgramUrl": coalesce(studyProgramUrl, studyProgram.asset->url)
 					}`;
-					const subRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent(subGROQ)}&_ts=${ts}`);
+					const subRes = await fetch(
+						`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent(subGROQ)}`,
+						{ cache: 'no-store' }
+					);
 					const subData = await subRes.json();
 					subjectsList = subData.result || [];
 
-					// 4. Лекції (З підтримкою завантажених файлів та посилань)
+					// 4. Лекції
 					const lesGROQ = `*[_type == "lesson"]{
 						...,
-						"fileUrl": select(defined(fileUrl) => fileUrl, defined(file.asset) => file.asset->url, null)
+						"fileUrl": coalesce(fileUrl, file.asset->url)
 					}`;
-					const lesRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent(lesGROQ)}&_ts=${ts}`);
+					const lesRes = await fetch(
+						`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent(lesGROQ)}`,
+						{ cache: 'no-store' }
+					);
 					const lesData = await lesRes.json();
 					lessonsList = lesData.result || [];
 
