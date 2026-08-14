@@ -262,11 +262,8 @@
             background: #f8fafc;
             border: 1px solid var(--border-color);
             border-radius: 10px;
-            padding: 14px 18px;
+            padding: 16px 18px;
             margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .btn-delete {
@@ -282,6 +279,42 @@
         }
 
         .btn-delete:hover { background: #fca5a5; }
+
+        /* Кнопки перегляду документів у предметі */
+        .doc-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-doc {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--deep-blue);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-doc:hover {
+            background: #0284c7;
+            border-color: #0284c7;
+            color: #ffffff;
+        }
+
+        .btn-doc.disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            pointer-events: none;
+            background: #f1f5f9;
+        }
 
         /* Повідомлення про статус */
         .status-msg {
@@ -367,10 +400,12 @@
         </form>
     </div>
 
-    <!-- 2. ДИСЦИПЛІНИ -->
+    <!-- 2. ДИСЦИПЛІНИ (З СИЛАБУСОМ ТА ПРОГРАМАМИ) -->
     <div id="tab-subjects" class="tab-content">
-        <h3 style="margin-bottom: 18px; color: var(--deep-blue);">Управління Дисциплінами</h3>
-        <form onsubmit="addSubject(event)">
+        <h3 id="subject-form-title" style="margin-bottom: 18px; color: var(--deep-blue);">Управління Дисциплінами</h3>
+        <form onsubmit="saveSubject(event)">
+            <input type="hidden" id="s-id" value="">
+
             <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 15px;">
                 <div class="form-group">
                     <label>Назва дисципліни:</label>
@@ -381,11 +416,32 @@
                     <input type="text" id="s-icon" placeholder="💻" value="💻">
                 </div>
             </div>
+            
             <div class="form-group">
                 <label>Короткий опис:</label>
                 <textarea id="s-desc" placeholder="Опис курсів, для яких груп..."></textarea>
             </div>
-            <button type="submit" class="btn-action">➕ Додати дисципліну</button>
+
+            <!-- ПОЛИНА НА ДОКУМЕНТИ -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>📄 Посилання на Силабус:</label>
+                    <input type="text" id="s-syllabus" placeholder="https://drive.google.com/file/d/...">
+                </div>
+                <div class="form-group">
+                    <label>📋 Робоча програма:</label>
+                    <input type="text" id="s-work-program" placeholder="https://drive.google.com/file/d/...">
+                </div>
+                <div class="form-group">
+                    <label>🎓 Навчальна програма:</label>
+                    <input type="text" id="s-study-program" placeholder="https://drive.google.com/file/d/...">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn-action" id="btn-save-subject">➕ Додати дисципліну</button>
+                <button type="button" class="btn-action" id="btn-cancel-subject" style="background: #64748b; display: none;" onclick="resetSubjectForm()">Скасувати</button>
+            </div>
         </form>
 
         <div class="items-list">
@@ -450,19 +506,15 @@
                     <button type="button" class="btn-icon-sm" onclick="toggleRawHtmlMode()" id="toggle-mode-btn">📄 Режим HTML-коду</button>
                 </div>
 
-                <!-- БЛОКОВИЙ РЕДАКТОР -->
                 <div id="block-editor-wrapper">
                     <div class="block-builder-toolbar">
                         <button type="button" class="btn-block-add" onclick="addTextBlock()">➕ Додати текст / заголовок</button>
                         <button type="button" class="btn-block-add" onclick="addImageBlock()">🖼️ Додати фото / зображення</button>
                     </div>
 
-                    <div id="blocks-container">
-                        <!-- Динамічні блоки будуть з'являтися тут -->
-                    </div>
+                    <div id="blocks-container"></div>
                 </div>
 
-                <!-- РЕДАГУВАННЯ ЧИСТОГО HTML -->
                 <div id="raw-html-wrapper" style="display: none;">
                     <textarea id="l-content" style="min-height: 160px;" placeholder="Введіть HTML-код матеріалу..."></textarea>
                     <div class="hint">У цьому режимі ви можете редагувати чистий HTML-код напряму.</div>
@@ -504,7 +556,6 @@
             if (savedToken) document.getElementById('global-token').value = savedToken;
             loadAllData();
             
-            // Зауваження: додаємо перший порожній блок тексту за замовчуванням
             if (document.getElementById('blocks-container').children.length === 0) {
                 addTextBlock();
             }
@@ -570,6 +621,94 @@
             } catch (err) {
                 console.error("Помилка завантаження даних:", err);
             }
+        }
+
+        // --- ДИСЦИПЛІНИ (ЗБЕРЕЖЕННЯ, РЕДАГУВАННЯ ТА КНОПКИ ДОКУМЕНТІВ) ---
+        async function saveSubject(e) {
+            e.preventDefault();
+            const token = getToken();
+            if (!token) return;
+
+            const id = document.getElementById('s-id').value;
+
+            const docData = {
+                _type: "subject",
+                title: document.getElementById('s-title').value,
+                icon: document.getElementById('s-icon').value,
+                desc: document.getElementById('s-desc').value,
+                syllabusUrl: document.getElementById('s-syllabus').value,
+                workProgramUrl: document.getElementById('s-work-program').value,
+                studyProgramUrl: document.getElementById('s-study-program').value
+            };
+
+            if (id) {
+                docData._id = id;
+                await mutateSanity([{ createOrReplace: docData }], token, "Дисципліну успішно оновлено!");
+            } else {
+                await mutateSanity([{ create: docData }], token, "Дисципліну додано!");
+            }
+
+            resetSubjectForm();
+            loadAllData();
+        }
+
+        function editSubject(id) {
+            const s = subjects.find(item => item._id === id);
+            if (!s) return;
+
+            document.getElementById('s-id').value = s._id;
+            document.getElementById('s-title').value = s.title || '';
+            document.getElementById('s-icon').value = s.icon || '💻';
+            document.getElementById('s-desc').value = s.desc || '';
+            document.getElementById('s-syllabus').value = s.syllabusUrl || '';
+            document.getElementById('s-work-program').value = s.workProgramUrl || '';
+            document.getElementById('s-study-program').value = s.studyProgramUrl || '';
+
+            document.getElementById('subject-form-title').innerText = '✏️ Редагування Дисципліни';
+            document.getElementById('btn-save-subject').innerText = '💾 Зберегти зміни';
+            document.getElementById('btn-cancel-subject').style.display = 'inline-block';
+
+            document.getElementById('tab-subjects').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetSubjectForm() {
+            document.getElementById('s-id').value = '';
+            document.getElementById('s-title').value = '';
+            document.getElementById('s-icon').value = '💻';
+            document.getElementById('s-desc').value = '';
+            document.getElementById('s-syllabus').value = '';
+            document.getElementById('s-work-program').value = '';
+            document.getElementById('s-study-program').value = '';
+
+            document.getElementById('subject-form-title').innerText = 'Управління Дисциплінами';
+            document.getElementById('btn-save-subject').innerText = '➕ Додати дисципліну';
+            document.getElementById('btn-cancel-subject').style.display = 'none';
+        }
+
+        function renderSubjectsAdmin() {
+            const list = document.getElementById('subjects-admin-list');
+            if(subjects.length === 0) { list.innerHTML = '<p class="hint">Немає дисциплін.</p>'; return; }
+            list.innerHTML = subjects.map(s => `
+                <div class="item-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <strong style="font-size: 1.05rem;">${s.icon || '📚'} ${escapeHTML(s.title)}</strong>
+                            <p style="font-size:0.85rem; color:#64748b; margin-top:4px;">${escapeHTML(s.desc || '')}</p>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn-action" style="padding:6px 12px; font-size:0.85rem;" onclick="editSubject('${s._id}')">✏️ Редагувати</button>
+                            <button class="btn-delete" onclick="deleteDoc('${s._id}')">Видалити</button>
+                        </div>
+                    </div>
+                    
+                    <!-- КНОПКИ ДЛЯ ПЕРЕГЛЯДУ ДОКУМЕНТІВ -->
+                    <div class="doc-buttons">
+                        ${s.syllabusUrl ? `<a href="${escapeAttr(s.syllabusUrl)}" target="_blank" class="btn-doc">📄 Силабус</a>` : `<span class="btn-doc disabled">📄 Силабус (немає)</span>`}
+                        ${s.workProgramUrl ? `<a href="${escapeAttr(s.workProgramUrl)}" target="_blank" class="btn-doc">📋 Робоча програма</a>` : `<span class="btn-doc disabled">📋 Робоча програма (немає)</span>`}
+                        ${s.studyProgramUrl ? `<a href="${escapeAttr(s.studyProgramUrl)}" target="_blank" class="btn-doc">🎓 Навчальна програма</a>` : `<span class="btn-doc disabled">🎓 Навчальна програма (немає)</span>`}
+                    </div>
+                </div>
+            `).join('');
         }
 
         // --- ЛОГІКА КОНСТРУКТОРА БЛОКІВ (ТЕКСТ ТА ФОТО) ---
@@ -882,39 +1021,6 @@
             await mutateSanity([{ createOrReplace: docData }], token, "Портфоліо збережено!");
         }
 
-        // --- ДИСЦИПЛІНИ ---
-        async function addSubject(e) {
-            e.preventDefault();
-            const token = getToken();
-            if (!token) return;
-
-            const docData = {
-                _type: "subject",
-                title: document.getElementById('s-title').value,
-                icon: document.getElementById('s-icon').value,
-                desc: document.getElementById('s-desc').value
-            };
-
-            await mutateSanity([{ create: docData }], token, "Дисципліну додано!");
-            document.getElementById('s-title').value = '';
-            document.getElementById('s-desc').value = '';
-            loadAllData();
-        }
-
-        function renderSubjectsAdmin() {
-            const list = document.getElementById('subjects-admin-list');
-            if(subjects.length === 0) { list.innerHTML = '<p class="hint">Немає дисциплін.</p>'; return; }
-            list.innerHTML = subjects.map(s => `
-                <div class="item-card">
-                    <div>
-                        <strong>${s.icon || '📚'} ${escapeHTML(s.title)}</strong>
-                        <p style="font-size:0.8rem; color:#64748b;">${escapeHTML(s.desc || '')}</p>
-                    </div>
-                    <button class="btn-delete" onclick="deleteDoc('${s._id}')">Видалити</button>
-                </div>
-            `).join('');
-        }
-
         // --- ТИПИ ЗАВДАНЬ ---
         async function addTaskType(e) {
             e.preventDefault();
@@ -936,7 +1042,7 @@
             const list = document.getElementById('types-admin-list');
             if(taskTypes.length === 0) { list.innerHTML = '<p class="hint">Немає типів.</p>'; return; }
             list.innerHTML = taskTypes.map(t => `
-                <div class="item-card">
+                <div class="item-card" style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
                         <span style="display:inline-block; width:12px; height:12px; background:${t.color}; border-radius:50%; margin-right:6px;"></span>
                         <strong>${escapeHTML(t.title)}</strong>
@@ -1017,7 +1123,7 @@
             const list = document.getElementById('lessons-admin-list');
             if(lessons.length === 0) { list.innerHTML = '<p class="hint">Немає матеріалів.</p>'; return; }
             list.innerHTML = lessons.map(l => `
-                <div class="item-card">
+                <div class="item-card" style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
                         <strong>${escapeHTML(l.title)}</strong>
                         <p style="font-size:0.8rem; color:#64748b;">${escapeHTML(l.discipline)} | ${escapeHTML(l.taskType)}</p>
