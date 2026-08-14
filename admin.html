@@ -3,9 +3,9 @@
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Опублікувати матеріал | Панель викладача</title>
+		<title>Панель викладача | Створення та Редагування</title>
 
-		<!-- Подключение стилей Quill (Візуальний редактор з фото) -->
+		<!-- Стилі візуального редактора Quill -->
 		<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
 
 		<style>
@@ -17,6 +17,7 @@
 				--text-main: #0f172a;
 				--text-muted: #64748b;
 				--border-color: #cbd5e1;
+				--green: #10b981;
 			}
 
 			* { box-sizing: border-box; margin: 0; padding: 0; }
@@ -29,7 +30,7 @@
 			}
 
 			.admin-container {
-				max-width: 860px;
+				max-width: 880px;
 				margin: 0 auto;
 				background: var(--card-bg);
 				border-radius: 16px;
@@ -42,10 +43,25 @@
 				font-size: 1.5rem;
 				font-weight: 800;
 				color: var(--deep-blue);
-				margin-bottom: 24px;
+				margin-bottom: 20px;
 				display: flex;
 				align-items: center;
-				gap: 10px;
+				justify-content: space-between;
+			}
+
+			.mode-selector-box {
+				background: #f1f5f9;
+				border: 2px dashed var(--bright-blue);
+				border-radius: 12px;
+				padding: 16px;
+				margin-bottom: 24px;
+			}
+
+			.mode-selector-box label {
+				font-weight: 700;
+				color: var(--deep-blue);
+				display: block;
+				margin-bottom: 8px;
 			}
 
 			.form-grid {
@@ -87,7 +103,7 @@
 				border-color: var(--bright-blue);
 			}
 
-			/* Стилізація редактора Quill */
+			/* Стилізація Quill Editor */
 			.ql-toolbar.ql-snow {
 				border-top-left-radius: 10px;
 				border-top-right-radius: 10px;
@@ -99,13 +115,27 @@
 				border-bottom-left-radius: 10px;
 				border-bottom-right-radius: 10px;
 				border-color: var(--border-color) !important;
-				min-height: 220px;
+				min-height: 250px;
 				font-size: 1rem;
 				font-family: inherit;
 			}
 
+			/* Зображення всередині редактора */
+			.ql-editor img {
+				max-width: 100%;
+				height: auto;
+				border-radius: 8px;
+				margin: 10px 0;
+			}
+
+			.btn-actions {
+				display: flex;
+				gap: 12px;
+				align-items: center;
+			}
+
 			.btn-submit {
-				background: #00a3ff;
+				background: var(--bright-blue);
 				color: white;
 				border: none;
 				padding: 14px 28px;
@@ -123,14 +153,20 @@
 			.btn-submit:hover {
 				background: #008be0;
 				transform: translateY(-2px);
-				box-shadow: 0 6px 16px rgba(0, 163, 255, 0.35);
 			}
 
-			.btn-submit:disabled {
-				background: #94a3b8;
-				cursor: not-allowed;
-				transform: none;
+			.btn-cancel {
+				background: #e2e8f0;
+				color: var(--text-main);
+				border: none;
+				padding: 14px 20px;
+				font-size: 0.95rem;
+				font-weight: 600;
+				border-radius: 10px;
+				cursor: pointer;
 			}
+
+			.btn-cancel:hover { background: #cbd5e1; }
 
 			.token-box {
 				background: #fffbebf5;
@@ -147,14 +183,22 @@
 
 		<div class="admin-container">
 			<div class="form-header">
-				📝 4. Опублікувати матеріал
+				<span id="formTitleText">📝 Публікація матеріалу</span>
 			</div>
 
-			<!-- Поле для Sanity API Write Token -->
+			<!-- Токен авторизації -->
 			<div class="token-box">
-				<label style="font-weight:700; display:block; margin-bottom:4px;">🔑 Sanity Write Token (необхідний для запису):</label>
-				<input type="password" id="sanityToken" class="form-control" placeholder="Введіть ваш Sanity API Token (sk...)" style="margin-top:4px; font-size:0.85rem;" />
-				<span style="font-size: 0.78rem; opacity: 0.8;">Токен зберігається лише у вашому браузері під час сесії.</span>
+				<label style="font-weight:700; display:block; margin-bottom:4px;">🔑 Sanity Write Token:</label>
+				<input type="password" id="sanityToken" class="form-control" placeholder="Введіть Sanity API Write Token (sk...)" style="margin-top:4px; font-size:0.85rem;" />
+			</div>
+
+			<!-- Вибір режиму: Створення чи Редагування -->
+			<div class="mode-selector-box">
+				<label for="editLessonSelect">⚙️ Оберіть дію або матеріал для редагування:</label>
+				<select id="editLessonSelect" class="form-control" onchange="handleSelectLessonToEdit()">
+					<option value="NEW">➕ Створити новий матеріал</option>
+					<!-- Динамічно завантажуються наявні матеріали -->
+				</select>
 			</div>
 
 			<form id="publishForm" onsubmit="handlePublish(event)">
@@ -179,49 +223,57 @@
 					<input type="text" id="lessonTitle" class="form-control" placeholder="Лекція 1. Вступ..." required />
 				</div>
 
-				<!-- Візуальний редактор з підключенням фотографій -->
+				<!-- Візуальний редактор контенту та фото -->
 				<div class="form-group">
-					<label>Текст матеріалу (можна додавати фото, списки та форматування):</label>
+					<label>Текст матеріалу (додавайте текст, стилі та фото 🖼️):</label>
 					<div id="editor-container"></div>
 				</div>
 
 				<div class="form-group">
-					<label for="fileUrl">Посилання на файл (Google Drive / PDF / Презентація):</label>
+					<label for="fileUrl">Посилання на файл (Google Drive / PDF):</label>
 					<input type="url" id="fileUrl" class="form-control" placeholder="https://drive.google.com/..." />
 				</div>
 
-				<button type="submit" id="submitBtn" class="btn-submit">
-					🚀 Опублікувати матеріал
-				</button>
+				<div class="btn-actions">
+					<button type="submit" id="submitBtn" class="btn-submit">
+						🚀 Опублікувати матеріал
+					</button>
+					<button type="button" id="cancelEditBtn" class="btn-cancel" style="display: none;" onclick="resetFormToNew()">
+						Cкасувати редагування
+					</button>
+				</div>
 			</form>
 		</div>
 
-		<!-- Скрипт візуального редактора -->
+		<!-- Подключение Quill JS -->
 		<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
 
 		<script>
 			const SANITY_PROJECT_ID = "uld9o5j2";
 			const SANITY_DATASET = "production";
 
-			// 1. Ініціалізація редактора Quill з можливістю додавання фото
+			let allLessons = [];
+			let editingLessonId = null; // null = новий матеріал, string = ID матеріалу для редагування
+
+			// 1. Ініціалізація Quill Editor
 			const quill = new Quill('#editor-container', {
 				theme: 'snow',
-				placeholder: 'Введіть навчальний матеріал або вставте фотографії...',
+				placeholder: 'Введіть текст або натисніть значок фото для вставки зображення...',
 				modules: {
 					toolbar: [
 						[{ 'header': [1, 2, 3, false] }],
 						['bold', 'italic', 'underline', 'strike'],
 						[{ 'list': 'ordered'}, { 'list': 'bullet' }],
-						['image', 'link'], // <--- Кнопка додавання фото та посилань
+						['image', 'link'], // <-- Кнопка для вставки зображень та посилань
 						['clean']
 					]
 				}
 			});
 
-			// 2. Автоматичне завантаження списку дисциплін та типів завдань із Sanity
+			// 2. Завантаження початкових даних (Дисципліни, Типи, Наявні матеріали)
 			async function initFormData() {
 				try {
-					// Дисципліни
+					// 2.1 Дисципліни
 					const subRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "subject"]')}`);
 					const subData = await subRes.json();
 					const subSelect = document.getElementById('subjectSelect');
@@ -230,7 +282,7 @@
 						subSelect.innerHTML += `<option value="${sub.title}">${sub.icon || ''} ${sub.title}</option>`;
 					});
 
-					// Типи завдань
+					// 2.2 Типи завдань
 					const ttRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "taskType"]')}`);
 					const ttData = await ttRes.json();
 					const ttSelect = document.getElementById('taskTypeSelect');
@@ -239,31 +291,91 @@
 						ttSelect.innerHTML += `<option value="${tt.title}">${tt.title}</option>`;
 					});
 
+					// 2.3 Наявні лекції/матеріали
+					await loadLessonsList();
+
 				} catch (err) {
-					alert("Помилка завантаження даних із Sanity. Перевірте підключення.");
+					alert("Помилка завантаження даних.");
 					console.error(err);
 				}
 			}
 
-			// 3. Публікація лекції в Sanity
+			// Оновлення списку матеріалів у випадаючому меню
+			async function loadLessonsList() {
+				const lesRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "lesson"]')}`);
+				const lesData = await lesRes.json();
+				allLessons = lesData.result || [];
+
+				const editSelect = document.getElementById('editLessonSelect');
+				editSelect.innerHTML = '<option value="NEW">➕ Створити новий матеріал</option>';
+				
+				allLessons.forEach(les => {
+					editSelect.innerHTML += `<option value="${les._id}">✏️ Редагувати: [${les.discipline || 'Без предмету'}] ${les.title}</option>`;
+				});
+			}
+
+			// 3. Обробка вибору матеріалу для редагування
+			function handleSelectLessonToEdit() {
+				const selectedId = document.getElementById('editLessonSelect').value;
+
+				if (selectedId === 'NEW') {
+					resetFormToNew();
+				} else {
+					const lesson = allLessons.find(l => l._id === selectedId);
+					if (lesson) {
+						editingLessonId = lesson._id;
+
+						// Заповнюємо форму наявними даними
+						document.getElementById('lessonTitle').value = lesson.title || '';
+						document.getElementById('subjectSelect').value = lesson.discipline || '';
+						document.getElementById('taskTypeSelect').value = lesson.taskType || '';
+						document.getElementById('fileUrl').value = lesson.fileUrl || '';
+						
+						// Вставляємо збережений текст та картинки в редактор Quill
+						quill.root.innerHTML = lesson.content || '';
+
+						// Змінюємо вигляд кнопки та заголовка
+						document.getElementById('formTitleText').innerText = "✏️ Редагування матеріалу";
+						const submitBtn = document.getElementById('submitBtn');
+						submitBtn.innerText = "💾 Зберегти зміни";
+						submitBtn.style.background = "var(--green)";
+						document.getElementById('cancelEditBtn').style.display = "inline-block";
+					}
+				}
+			}
+
+			// Скинути форму до створення нового матеріалу
+			function resetFormToNew() {
+				editingLessonId = null;
+				document.getElementById('editLessonSelect').value = "NEW";
+				document.getElementById('publishForm').reset();
+				quill.setContents([]);
+
+				document.getElementById('formTitleText').innerText = "📝 Публікація матеріалу";
+				const submitBtn = document.getElementById('submitBtn');
+				submitBtn.innerText = "🚀 Опублікувати матеріал";
+				submitBtn.style.background = "var(--bright-blue)";
+				document.getElementById('cancelEditBtn').style.display = "none";
+			}
+
+			// 4. Збереження (Створення або Редагування) в Sanity
 			async function handlePublish(event) {
 				event.preventDefault();
 
 				const token = document.getElementById('sanityToken').value.trim();
 				if (!token) {
-					alert("Будь ласка, введіть вашій Sanity API Token (з правами Write) у поле вгорі форми.");
+					alert("Будь ласка, введіть ваш Sanity API Write Token у полі нагорі.");
 					return;
 				}
 
 				const btn = document.getElementById('submitBtn');
 				btn.disabled = true;
-				btn.innerText = "⏳ Публікація...";
+				btn.innerText = "⏳ Збереження...";
 
-				// Отримуємо згенерований HTML-код (включаючи вставлені картинки)
+				// Отримуємо згенерований HTML (текст + зображення)
 				const contentHTML = quill.root.innerHTML;
 
-				const doc = {
-					_type: 'lesson',
+				const payload = {
 					title: document.getElementById('lessonTitle').value.trim(),
 					discipline: document.getElementById('subjectSelect').value,
 					taskType: document.getElementById('taskTypeSelect').value,
@@ -271,7 +383,25 @@
 					fileUrl: document.getElementById('fileUrl').value.trim()
 				};
 
-				const mutations = [{ create: doc }];
+				let mutations = [];
+
+				if (editingLessonId) {
+					// РЕЖИМ ОНОВЛЕННЯ (PATCH)
+					mutations = [{
+						patch: {
+							id: editingLessonId,
+							set: payload
+						}
+					}];
+				} else {
+					// РЕЖИМ СТВОРЕННЯ (CREATE)
+					mutations = [{
+						create: {
+							_type: 'lesson',
+							...payload
+						}
+					}];
+				}
 
 				try {
 					const res = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/mutate/${SANITY_DATASET}`, {
@@ -286,18 +416,17 @@
 					const result = await res.json();
 
 					if (res.ok) {
-						alert("🎉 Матеріал успішно опубліковано!");
-						document.getElementById('publishForm').reset();
-						quill.setContents([]);
+						alert(editingLessonId ? "✅ Зміни успішно збережено!" : "🎉 Новий матеріал опубліковано!");
+						await loadLessonsList();
+						resetFormToNew();
 					} else {
-						alert(`Помилка: ${result.error ? result.error.description : 'Не вдалося опублікувати.'}`);
+						alert(`Помилка: ${result.error ? result.error.description : 'Не вдалося зберегти.'}`);
 					}
 				} catch (err) {
-					alert("Помилка мережі при публікації.");
+					alert("Помилка мережі при відправці запиту.");
 					console.error(err);
 				} finally {
 					btn.disabled = false;
-					btn.innerText = "🚀 Опублікувати матеріал";
 				}
 			}
 
