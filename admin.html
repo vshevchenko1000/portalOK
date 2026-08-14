@@ -416,13 +416,13 @@
                     <input type="text" id="s-icon" placeholder="💻" value="💻">
                 </div>
             </div>
-            
+
             <div class="form-group">
                 <label>Короткий опис:</label>
                 <textarea id="s-desc" placeholder="Опис курсів, для яких груп..."></textarea>
             </div>
 
-            <!-- ПОЛИНА НА ДОКУМЕНТИ -->
+            <!-- ПОСИЛАННЯ НА ДОКУМЕНТИ -->
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
                 <div class="form-group">
                     <label>📄 Посилання на Силабус:</label>
@@ -478,7 +478,7 @@
         <h3 id="lesson-form-title" style="margin-bottom: 18px; color: var(--deep-blue);">Додавання Нової Лекції / Завдання</h3>
         <form onsubmit="saveLesson(event)">
             <input type="hidden" id="l-id" value="">
-            
+
             <div class="form-group">
                 <label>Тема / Назва матеріалу:</label>
                 <input type="text" id="l-title" placeholder="Лекція 1. Вступ до HTML5" required>
@@ -499,7 +499,7 @@
                 </div>
             </div>
 
-            <!-- БЛОКОВИЙ РЕДАКТОР ЗМІСТУ (ТЕКСТ ТА ФОТО) -->
+            <!-- БЛОКОВИЙ РЕДАКТОР ЗМІСТУ -->
             <div class="form-group">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                     <label style="margin-bottom: 0;">Зміст матеріалу (Блоки тексту та Фото):</label>
@@ -555,7 +555,7 @@
             const savedToken = localStorage.getItem('sanity_token');
             if (savedToken) document.getElementById('global-token').value = savedToken;
             loadAllData();
-            
+
             if (document.getElementById('blocks-container').children.length === 0) {
                 addTextBlock();
             }
@@ -581,10 +581,14 @@
             btn.classList.add('active');
         }
 
+        // --- ЗАВАНТАЖЕННЯ ДАНИХ З АВТОРИЗАЦІЄЮ ТА ІЗОЛЯЦІЄЮ ---
         async function loadAllData() {
+            const token = localStorage.getItem('sanity_token') || document.getElementById('global-token')?.value?.trim();
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+            // 1. Портфоліо
             try {
-                // 1. Портфоліо
-                const pRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "portfolio"][0]')}`);
+                const pRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "portfolio"][0]')}`, { headers });
                 const pData = await pRes.json();
                 if (pData.result) {
                     const p = pData.result;
@@ -598,32 +602,102 @@
                         document.getElementById('p-disciplines').value = Array.isArray(p.disciplines) ? p.disciplines.join(', ') : p.disciplines;
                     }
                 }
+            } catch (err) {
+                console.error("Помилка завантаження портфоліо:", err);
+            }
 
-                // 2. Дисципліни
-                const sRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "subject"]')}`);
+            // 2. Дисципліни
+            try {
+                const sRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "subject"]')}`, { headers });
                 const sData = await sRes.json();
                 subjects = sData.result || [];
                 renderSubjectsAdmin();
+            } catch (err) {
+                console.error("Помилка завантаження дисциплін:", err);
+            }
 
-                // 3. Типи
-                const tRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "taskType"]')}`);
+            // 3. Типи завдань
+            try {
+                const tRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "taskType"]')}`, { headers });
                 const tData = await tRes.json();
                 taskTypes = tData.result || [];
                 renderTaskTypesAdmin();
+            } catch (err) {
+                console.error("Помилка завантаження типів:", err);
+            }
 
-                // 4. Лекції
-                const lRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "lesson"]')}`);
+            // 4. Лекції
+            try {
+                const lRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "lesson"]')}`, { headers });
                 const lData = await lRes.json();
                 lessons = lData.result || [];
                 renderLessonsAdmin();
-
-                updateDropdowns();
             } catch (err) {
-                console.error("Помилка завантаження даних:", err);
+                console.error("Помилка завантаження лекцій:", err);
+            }
+
+            updateDropdowns();
+        }
+
+        // --- SANITY MUTATION HELPER ---
+        async function mutateSanity(mutations, token, successMsg) {
+            try {
+                const res = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/mutate/${SANITY_DATASET}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ mutations })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showStatus(successMsg, 'success');
+                    return data;
+                } else {
+                    showStatus(`Помилка Sanity: ${data.error?.description || 'Невідома помилка'}`, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showStatus('Мережева помилка при збереженні', 'error');
             }
         }
 
-        // --- ДИСЦИПЛІНИ (ЗБЕРЕЖЕННЯ, РЕДАГУВАННЯ ТА КНОПКИ ДОКУМЕНТІВ) ---
+        async function deleteDoc(id) {
+            if (!confirm('Ви впевнені, що хочете видалити цей елемент?')) return;
+            const token = getToken();
+            if (!token) return;
+
+            await mutateSanity([{ delete: { id: id } }], token, 'Успішно видалено!');
+            loadAllData();
+        }
+
+        // --- ПОРТФОЛІО ---
+        async function savePortfolio(e) {
+            e.preventDefault();
+            const token = getToken();
+            if (!token) return;
+
+            const discStr = document.getElementById('p-disciplines').value;
+            const disciplines = discStr.split(',').map(s => s.trim()).filter(Boolean);
+
+            const docData = {
+                _id: 'portfolio-main',
+                _type: 'portfolio',
+                name: document.getElementById('p-name').value,
+                role: document.getElementById('p-role').value,
+                avatar: document.getElementById('p-avatar').value,
+                contacts: document.getElementById('p-contacts').value,
+                education: document.getElementById('p-education').value,
+                interests: document.getElementById('p-interests').value,
+                disciplines: disciplines
+            };
+
+            await mutateSanity([{ createOrReplace: docData }], token, "Портфоліо успішно збережено!");
+            loadAllData();
+        }
+
+        // --- ДИСЦИПЛІНИ ---
         async function saveSubject(e) {
             e.preventDefault();
             const token = getToken();
@@ -687,7 +761,7 @@
 
         function renderSubjectsAdmin() {
             const list = document.getElementById('subjects-admin-list');
-            if(subjects.length === 0) { list.innerHTML = '<p class="hint">Немає дисциплін.</p>'; return; }
+            if (subjects.length === 0) { list.innerHTML = '<p class="hint">Немає дисциплін.</p>'; return; }
             list.innerHTML = subjects.map(s => `
                 <div class="item-card">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -701,7 +775,6 @@
                         </div>
                     </div>
                     
-                    <!-- КНОПКИ ДЛЯ ПЕРЕГЛЯДУ ДОКУМЕНТІВ -->
                     <div class="doc-buttons">
                         ${s.syllabusUrl ? `<a href="${escapeAttr(s.syllabusUrl)}" target="_blank" class="btn-doc">📄 Силабус</a>` : `<span class="btn-doc disabled">📄 Силабус (немає)</span>`}
                         ${s.workProgramUrl ? `<a href="${escapeAttr(s.workProgramUrl)}" target="_blank" class="btn-doc">📋 Робоча програма</a>` : `<span class="btn-doc disabled">📋 Робоча програма (немає)</span>`}
@@ -711,8 +784,40 @@
             `).join('');
         }
 
-        // --- ЛОГІКА КОНСТРУКТОРА БЛОКІВ (ТЕКСТ ТА ФОТО) ---
+        // --- ТИПИ ЗАВДАНЬ ---
+        async function addTaskType(e) {
+            e.preventDefault();
+            const token = getToken();
+            if (!token) return;
 
+            const docData = {
+                _type: 'taskType',
+                title: document.getElementById('t-title').value,
+                color: document.getElementById('t-color').value
+            };
+
+            await mutateSanity([{ create: docData }], token, "Тип завдання додано!");
+            document.getElementById('t-title').value = '';
+            document.getElementById('t-color').value = '#e0f2fe';
+            loadAllData();
+        }
+
+        function renderTaskTypesAdmin() {
+            const list = document.getElementById('types-admin-list');
+            if (taskTypes.length === 0) { list.innerHTML = '<p class="hint">Немає типів.</p>'; return; }
+            list.innerHTML = taskTypes.map(t => `
+                <div class="item-card" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <span style="display:inline-block; padding:4px 10px; border-radius:6px; background:${escapeAttr(t.color || '#e0f2fe')}; font-weight:600; font-size:0.85rem;">
+                            ${escapeHTML(t.title)}
+                        </span>
+                    </div>
+                    <button class="btn-delete" onclick="deleteDoc('${t._id}')">Видалити</button>
+                </div>
+            `).join('');
+        }
+
+        // --- ЛЕКЦІЇ ТА БЛОКОВИЙ РЕДАКТОР ---
         function toggleRawHtmlMode() {
             isRawHtmlMode = !isRawHtmlMode;
             const blockWrapper = document.getElementById('block-editor-wrapper');
@@ -787,294 +892,105 @@
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     <div>
                         <label style="font-size: 0.78rem; text-transform: none;">Посилання на фото (URL):</label>
-                        <input type="text" class="block-img-url" value="${escapeAttr(imgUrl)}" placeholder="https://example.com/image.jpg" oninput="updateImagePreview('${id}')">
+                        <input type="text" class="block-image-url" placeholder="https://..." value="${escapeAttr(imgUrl)}" oninput="updateImagePreview('${id}')">
                     </div>
-                    
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 0.8rem; color: #64748b;">або завантажте з пристрою:</span>
-                        <input type="file" accept="image/*" style="display:none;" id="file-input-${id}" onchange="handleImageUpload(event, '${id}')">
-                        <button type="button" class="btn-icon-sm" style="background: var(--bright-blue); color: white;" onclick="document.getElementById('file-input-${id}').click()">📁 Обрати файл</button>
-                        <span id="upload-status-${id}" style="font-size: 0.8rem; color: #0284c7; font-weight: 600;"></span>
-                    </div>
-
                     <div>
-                        <label style="font-size: 0.78rem; text-transform: none;">Підпис / Опис фото (необов'язково):</label>
-                        <input type="text" class="block-img-caption" value="${escapeAttr(caption)}" placeholder="Підпис під фото...">
+                        <label style="font-size: 0.78rem; text-transform: none;">Підпис до фото (необов'язково):</label>
+                        <input type="text" class="block-image-caption" placeholder="Наприклад: Схема роботи..." value="${escapeAttr(caption)}">
                     </div>
-
-                    <div class="image-preview-container" id="preview-box-${id}" style="${imgUrl ? 'display:flex;' : 'display:none;'}">
-                        <img id="preview-img-${id}" src="${imgUrl || ''}" alt="Preview" />
+                    <div class="image-preview-container" id="preview-${id}" style="${imgUrl ? '' : 'display:none;'}">
+                        <img src="${escapeAttr(imgUrl)}" alt="Прев'ю">
                     </div>
                 </div>
             `;
-
             container.appendChild(div);
         }
 
-        async function handleImageUpload(e, blockId) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const token = getToken();
-            if (!token) return;
-
-            const statusEl = document.getElementById(`upload-status-${blockId}`);
-            statusEl.innerText = '⏳ Завантаження...';
-
-            try {
-                const response = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/assets/images/${SANITY_DATASET}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': file.type,
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: file
-                });
-
-                const data = await response.json();
-                if (data.document && data.document.url) {
-                    const block = document.getElementById(blockId);
-                    block.querySelector('.block-img-url').value = data.document.url;
-                    updateImagePreview(blockId);
-                    statusEl.innerText = '✅ Завантажено!';
-                    setTimeout(() => { statusEl.innerText = ''; }, 3000);
-                } else {
-                    throw new Error(data.error ? data.error.message : 'Помилка завантаження');
-                }
-            } catch (err) {
-                console.error(err);
-                statusEl.innerText = '❌ Помилка завантаження';
-                showStatus('Не вдалося завантажити фото на сервер', 'error');
-            }
-        }
-
-        function updateImagePreview(blockId) {
-            const block = document.getElementById(blockId);
+        function updateImagePreview(id) {
+            const block = document.getElementById(id);
             if (!block) return;
-            const url = block.querySelector('.block-img-url').value.trim();
-            const previewBox = document.getElementById(`preview-box-${blockId}`);
-            const previewImg = document.getElementById(`preview-img-${blockId}`);
-
+            const url = block.querySelector('.block-image-url').value.trim();
+            const previewContainer = document.getElementById(`preview-${id}`);
             if (url) {
-                previewImg.src = url;
-                previewBox.style.display = 'flex';
+                previewContainer.style.display = 'flex';
+                previewContainer.querySelector('img').src = url;
             } else {
-                previewBox.style.display = 'none';
+                previewContainer.style.display = 'none';
             }
         }
 
-        function removeBlock(blockId) {
-            const block = document.getElementById(blockId);
-            if (block) block.remove();
-        }
-
-        function moveBlockUp(blockId) {
-            const block = document.getElementById(blockId);
+        function moveBlockUp(id) {
+            const block = document.getElementById(id);
             if (block && block.previousElementSibling) {
                 block.parentNode.insertBefore(block, block.previousElementSibling);
             }
         }
 
-        function moveBlockDown(blockId) {
-            const block = document.getElementById(blockId);
+        function moveBlockDown(id) {
+            const block = document.getElementById(id);
             if (block && block.nextElementSibling) {
                 block.parentNode.insertBefore(block.nextElementSibling, block);
             }
+        }
+
+        function removeBlock(id) {
+            const block = document.getElementById(id);
+            if (block) block.remove();
         }
 
         function compileBlocksToHTML() {
             if (isRawHtmlMode) {
                 return document.getElementById('l-content').value;
             }
-
-            const blocks = document.querySelectorAll('#blocks-container .content-block-item');
-            let htmlResult = '';
+            const container = document.getElementById('blocks-container');
+            const blocks = container.querySelectorAll('.content-block-item');
+            let html = '';
 
             blocks.forEach(block => {
                 const type = block.getAttribute('data-type');
                 if (type === 'text') {
                     const tag = block.querySelector('.block-text-type').value;
-                    const content = block.querySelector('.block-text-content').value.trim();
-                    if (content) {
-                        if (tag === 'p') {
-                            const paragraphs = content.split('\n').filter(p => p.trim() !== '');
-                            paragraphs.forEach(p => {
-                                htmlResult += `<p>${p}</p>\n`;
-                            });
-                        } else if (tag === 'blockquote') {
-                            htmlResult += `<blockquote>${content}</blockquote>\n`;
+                    const val = block.querySelector('.block-text-content').value.trim();
+                    if (val) {
+                        if (tag === 'blockquote') {
+                            html += `<blockquote>${escapeHTML(val)}</blockquote>\n`;
                         } else {
-                            htmlResult += `<${tag}>${content}</${tag}>\n`;
+                            html += `<${tag}>${escapeHTML(val)}</${tag}>\n`;
                         }
                     }
                 } else if (type === 'image') {
-                    const url = block.querySelector('.block-img-url').value.trim();
-                    const caption = block.querySelector('.block-img-caption').value.trim();
+                    const url = block.querySelector('.block-image-url').value.trim();
+                    const caption = block.querySelector('.block-image-caption').value.trim();
                     if (url) {
-                        htmlResult += `<div style="text-align: center; margin: 20px 0;">\n`;
-                        htmlResult += `  <img src="${url}" alt="${escapeAttr(caption || 'Зображення')}" style="max-width:100%; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1);" />\n`;
-                        if (caption) {
-                            htmlResult += `  <p style="font-size:0.85rem; color:#64748b; margin-top:6px; font-style:italic;">${caption}</p>\n`;
-                        }
-                        htmlResult += `</div>\n`;
+                        html += `<figure><img src="${escapeAttr(url)}" alt="${escapeAttr(caption)}">${caption ? `<figcaption>${escapeHTML(caption)}</figcaption>` : ''}</figure>\n`;
                     }
                 }
             });
-
-            return htmlResult;
+            return html;
         }
 
-        function parseHTMLToBlocks(html) {
-            const container = document.getElementById('blocks-container');
-            container.innerHTML = '';
-
-            if (!html || html.trim() === '') {
-                addTextBlock();
-                return;
-            }
-
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const nodes = doc.body.childNodes;
-
-            let textBuffer = '';
-
-            nodes.forEach(node => {
-                if (node.nodeType === Node.ELEMENT_NODE) {
-                    const tagName = node.tagName.toLowerCase();
-
-                    if (['h2', 'h3', 'blockquote'].includes(tagName)) {
-                        if (textBuffer.trim()) {
-                            addTextBlock(textBuffer.trim(), 'p');
-                            textBuffer = '';
-                        }
-                        addTextBlock(node.textContent, tagName);
-                    } else if (tagName === 'p') {
-                        const img = node.querySelector('img');
-                        if (img) {
-                            if (textBuffer.trim()) {
-                                addTextBlock(textBuffer.trim(), 'p');
-                                textBuffer = '';
-                            }
-                            addImageBlock(img.src, img.alt || '');
-                        } else {
-                            if (textBuffer) textBuffer += '\n';
-                            textBuffer += node.textContent;
-                        }
-                    } else if (tagName === 'img') {
-                        if (textBuffer.trim()) {
-                            addTextBlock(textBuffer.trim(), 'p');
-                            textBuffer = '';
-                        }
-                        addImageBlock(node.src, node.alt || '');
-                    } else if (tagName === 'div') {
-                        const img = node.querySelector('img');
-                        const captionEl = node.querySelector('p');
-                        if (img) {
-                            if (textBuffer.trim()) {
-                                addTextBlock(textBuffer.trim(), 'p');
-                                textBuffer = '';
-                            }
-                            const caption = captionEl ? captionEl.textContent : (img.alt || '');
-                            addImageBlock(img.src, caption);
-                        } else {
-                            if (textBuffer) textBuffer += '\n';
-                            textBuffer += node.textContent;
-                        }
-                    }
-                } else if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-                    if (textBuffer) textBuffer += '\n';
-                    textBuffer += node.textContent.trim();
-                }
-            });
-
-            if (textBuffer.trim()) {
-                addTextBlock(textBuffer.trim(), 'p');
-            }
-
-            if (container.children.length === 0) {
-                addTextBlock();
-            }
-        }
-
-        // --- ПОРТФОЛІО ---
-        async function savePortfolio(e) {
-            e.preventDefault();
-            const token = getToken();
-            if (!token) return;
-
-            const disciplinesRaw = document.getElementById('p-disciplines').value;
-            const disciplinesArray = disciplinesRaw.split(',').map(item => item.trim()).filter(item => item.length > 0);
-
-            const docData = {
-                _id: "teacherPortfolio",
-                _type: "portfolio",
-                name: document.getElementById('p-name').value,
-                role: document.getElementById('p-role').value,
-                avatar: document.getElementById('p-avatar').value,
-                contacts: document.getElementById('p-contacts').value,
-                education: document.getElementById('p-education').value,
-                interests: document.getElementById('p-interests').value,
-                disciplines: disciplinesArray
-            };
-
-            await mutateSanity([{ createOrReplace: docData }], token, "Портфоліо збережено!");
-        }
-
-        // --- ТИПИ ЗАВДАНЬ ---
-        async function addTaskType(e) {
-            e.preventDefault();
-            const token = getToken();
-            if (!token) return;
-
-            const docData = {
-                _type: "taskType",
-                title: document.getElementById('t-title').value,
-                color: document.getElementById('t-color').value
-            };
-
-            await mutateSanity([{ create: docData }], token, "Тип матеріалу додано!");
-            document.getElementById('t-title').value = '';
-            loadAllData();
-        }
-
-        function renderTaskTypesAdmin() {
-            const list = document.getElementById('types-admin-list');
-            if(taskTypes.length === 0) { list.innerHTML = '<p class="hint">Немає типів.</p>'; return; }
-            list.innerHTML = taskTypes.map(t => `
-                <div class="item-card" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <span style="display:inline-block; width:12px; height:12px; background:${t.color}; border-radius:50%; margin-right:6px;"></span>
-                        <strong>${escapeHTML(t.title)}</strong>
-                    </div>
-                    <button class="btn-delete" onclick="deleteDoc('${t._id}')">Видалити</button>
-                </div>
-            `).join('');
-        }
-
-        // --- ЛЕКЦІЇ (ЗБЕРЕЖЕННЯ ТА РЕДАГУВАННЯ) ---
         async function saveLesson(e) {
             e.preventDefault();
             const token = getToken();
             if (!token) return;
 
-            const lessonId = document.getElementById('l-id').value;
-            const finalContent = compileBlocksToHTML();
+            const id = document.getElementById('l-id').value;
+            const content = compileBlocksToHTML();
 
             const docData = {
-                _type: "lesson",
+                _type: 'lesson',
                 title: document.getElementById('l-title').value,
-                discipline: document.getElementById('l-discipline').value,
-                taskType: document.getElementById('l-type').value,
-                content: finalContent,
+                subjectId: document.getElementById('l-discipline').value,
+                typeId: document.getElementById('l-type').value,
+                content: content,
                 fileUrl: document.getElementById('l-file').value
             };
 
-            if (lessonId) {
-                docData._id = lessonId;
+            if (id) {
+                docData._id = id;
                 await mutateSanity([{ createOrReplace: docData }], token, "Матеріал успішно оновлено!");
             } else {
-                await mutateSanity([{ create: docData }], token, "Матеріал опубліковано!");
+                await mutateSanity([{ create: docData }], token, "Матеріал додано!");
             }
 
             resetLessonForm();
@@ -1082,17 +998,19 @@
         }
 
         function editLesson(id) {
-            const lesson = lessons.find(l => l._id === id);
-            if (!lesson) return;
+            const l = lessons.find(item => item._id === id);
+            if (!l) return;
 
-            document.getElementById('l-id').value = lesson._id;
-            document.getElementById('l-title').value = lesson.title || '';
-            document.getElementById('l-discipline').value = lesson.discipline || '';
-            document.getElementById('l-type').value = lesson.taskType || '';
-            document.getElementById('l-file').value = lesson.fileUrl || '';
+            document.getElementById('l-id').value = l._id;
+            document.getElementById('l-title').value = l.title || '';
+            document.getElementById('l-discipline').value = l.subjectId || '';
+            document.getElementById('l-type').value = l.typeId || '';
+            document.getElementById('l-file').value = l.fileUrl || '';
 
-            document.getElementById('l-content').value = lesson.content || '';
-            parseHTMLToBlocks(lesson.content || '');
+            document.getElementById('l-content').value = l.content || '';
+            if (!isRawHtmlMode) {
+                toggleRawHtmlMode();
+            }
 
             document.getElementById('lesson-form-title').innerText = '✏️ Редагування Матеріалу';
             document.getElementById('btn-save-lesson').innerText = '💾 Зберегти зміни';
@@ -1104,102 +1022,91 @@
         function resetLessonForm() {
             document.getElementById('l-id').value = '';
             document.getElementById('l-title').value = '';
-            document.getElementById('l-content').value = '';
+            document.getElementById('l-discipline').value = '';
+            document.getElementById('l-type').value = '';
             document.getElementById('l-file').value = '';
-            
+            document.getElementById('l-content').value = '';
+
             document.getElementById('blocks-container').innerHTML = '';
+            if (isRawHtmlMode) {
+                toggleRawHtmlMode();
+            }
             addTextBlock();
 
             document.getElementById('lesson-form-title').innerText = 'Додавання Нової Лекції / Завдання';
             document.getElementById('btn-save-lesson').innerText = '🚀 Опублікувати матеріал';
             document.getElementById('btn-cancel-edit').style.display = 'none';
-
-            if (isRawHtmlMode) {
-                toggleRawHtmlMode();
-            }
         }
 
         function renderLessonsAdmin() {
             const list = document.getElementById('lessons-admin-list');
-            if(lessons.length === 0) { list.innerHTML = '<p class="hint">Немає матеріалів.</p>'; return; }
-            list.innerHTML = lessons.map(l => `
-                <div class="item-card" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <strong>${escapeHTML(l.title)}</strong>
-                        <p style="font-size:0.8rem; color:#64748b;">${escapeHTML(l.discipline)} | ${escapeHTML(l.taskType)}</p>
+            if (lessons.length === 0) { list.innerHTML = '<p class="hint">Немає матеріалів.</p>'; return; }
+            list.innerHTML = lessons.map(l => {
+                const subj = subjects.find(s => s._id === l.subjectId);
+                const type = taskTypes.find(t => t._id === l.typeId);
+                return `
+                    <div class="item-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <div>
+                                <strong style="font-size:1rem;">${escapeHTML(l.title)}</strong>
+                                <div style="margin-top:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                    <span style="font-size:0.8rem; background:#e2e8f0; padding:2px 8px; border-radius:4px;">
+                                        ${subj ? escapeHTML(subj.title) : 'Без дисципліни'}
+                                    </span>
+                                    ${type ? `<span style="font-size:0.8rem; background:${escapeAttr(type.color || '#e0f2fe')}; padding:2px 8px; border-radius:4px; font-weight:600;">${escapeHTML(type.title)}</span>` : ''}
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn-action" style="padding:6px 12px; font-size:0.85rem;" onclick="editLesson('${l._id}')">✏️ Редагувати</button>
+                                <button class="btn-delete" onclick="deleteDoc('${l._id}')">Видалити</button>
+                            </div>
+                        </div>
                     </div>
-                    <div style="display:flex; gap:8px;">
-                        <button class="btn-action" style="padding:6px 12px; font-size:0.85rem;" onclick="editLesson('${l._id}')">✏️ Редагувати</button>
-                        <button class="btn-delete" onclick="deleteDoc('${l._id}')">Видалити</button>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function updateDropdowns() {
-            const disSelect = document.getElementById('l-discipline');
-            disSelect.innerHTML = '<option value="">Оберіть дисципліну...</option>' + 
-                subjects.map(s => `<option value="${escapeAttr(s.title)}">${escapeHTML(s.title)}</option>`).join('');
+            const sSelect = document.getElementById('l-discipline');
+            const tSelect = document.getElementById('l-type');
 
-            const typeSelect = document.getElementById('l-type');
-            typeSelect.innerHTML = '<option value="">Оберіть тип...</option>' + 
-                taskTypes.map(t => `<option value="${escapeAttr(t.title)}">${escapeHTML(t.title)}</option>`).join('');
-        }
+            if (sSelect) {
+                const currentS = sSelect.value;
+                sSelect.innerHTML = '<option value="">Оберіть дисципліну...</option>' + 
+                    subjects.map(s => `<option value="${s._id}">${s.icon || '📚'} ${escapeHTML(s.title)}</option>`).join('');
+                sSelect.value = currentS;
+            }
 
-        async function deleteDoc(id) {
-            if(!confirm("Ви дійсно бажаєте видалити цей елемент?")) return;
-            const token = getToken();
-            if(!token) return;
-
-            await mutateSanity([{ delete: { id: id } }], token, "Елемент видалено!");
-            loadAllData();
-        }
-
-        async function mutateSanity(mutations, token, successMsg) {
-            try {
-                showStatus('Збереження...', '');
-                const response = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/mutate/${SANITY_DATASET}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ mutations })
-                });
-
-                if (response.ok) {
-                    showStatus(`✅ ${successMsg}`, 'success');
-                } else {
-                    const err = await response.json();
-                    showStatus(`Помилка: ${err.error ? err.error.description : 'Перевірте токен'}`, 'error');
-                }
-            } catch (err) {
-                showStatus('Помилка з\'єднання з сервером', 'error');
+            if (tSelect) {
+                const currentT = tSelect.value;
+                tSelect.innerHTML = '<option value="">Оберіть тип...</option>' + 
+                    taskTypes.map(t => `<option value="${t._id}">${escapeHTML(t.title)}</option>`).join('');
+                tSelect.value = currentT;
             }
         }
 
+        // --- ХЕЛПЕРИ ---
         function showStatus(msg, type) {
             const el = document.getElementById('status');
-            el.innerText = msg;
             el.className = `status-msg ${type}`;
+            el.innerText = msg;
             el.style.display = 'block';
-            if(type) {
-                setTimeout(() => { el.style.display = 'none'; }, 3500);
-            }
+            setTimeout(() => { el.style.display = 'none'; }, 4000);
         }
 
         function escapeHTML(str) {
             if (!str) return '';
-            return str.replace(/&/g, "&amp;")
-                      .replace(/</g, "&lt;")
-                      .replace(/>/g, "&gt;")
-                      .replace(/"/g, "&quot;")
-                      .replace(/'/g, "&#039;");
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
         }
 
         function escapeAttr(str) {
             if (!str) return '';
-            return str.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+            return String(str).replace(/"/g, '&quot;');
         }
     </script>
 </body>
