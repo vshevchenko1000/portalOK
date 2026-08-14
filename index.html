@@ -5,41 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Навчально-методичне забезпечення освітніх компонент — ДФКР</title>
     <style>
-        :root {
-            --primary: #0f172a;
-            --primary-light: #1e293b;
-            --accent: #0284c7;
-            --accent-hover: #0369a1;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --border: #e2e8f0;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --radius: 12px;
-            --shadow-sm: 0 2px 4px rgba(0,0,0,0.04);
-            --shadow-md: 0 6px 16px rgba(0,0,0,0.08);
-            --shadow-lg: 0 12px 32px rgba(0,0,0,0.15);
+        /* ОСНОВНІ СТИЛІ ТА СТИЛЬ ШАПКИ З ОРИГІНАЛЬНОГО ВЕБПОРТАЛУ */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background-color: var(--bg);
-            color: var(--text-main);
-            line-height: 1.6;
+            font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+            background-color: #f4f6f9;
+            color: #222222;
+            line-height: 1.5;
         }
 
-        /* ОНОВЛЕНА ШАПКА В СТИЛІ ДФКР */
+        /* ШАПКА В ОРИГІНАЛЬНОМУ СТИЛІ ДФКР */
         .site-header {
-            background-color: #001738; /* Глибокий темно-синій колір */
-            border-bottom: 4px solid #0284c7; /* Яскраво-блакитна смужка внизу */
-            padding: 16px 0;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            background-color: #001b40; /* Оригінальний темно-синій колір */
+            border-bottom: 4px solid #0099ff; /* Блакитна смужка */
+            padding: 14px 0;
+            color: #ffffff;
+            width: 100%;
         }
 
         .header-container {
@@ -49,54 +35,50 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
         }
 
         .brand-group {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 15px;
         }
 
-        .logo-box {
+        /* Логотип */
+        .header-logo {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 8px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .brand-text .main-title {
-            font-size: 1.15rem;
+            font-size: 1.2rem;
             font-weight: 800;
-            letter-spacing: 0.4px;
             text-transform: uppercase;
             color: #ffffff;
+            letter-spacing: 0.5px;
             line-height: 1.2;
         }
 
         .brand-text .sub-title {
-            font-size: 0.8rem;
-            color: #38bdf8;
+            font-size: 0.85rem;
+            color: #00a2ed; /* Блакитний колір підзаголовка */
             font-weight: 700;
-            margin-top: 3px;
+            margin-top: 4px;
             letter-spacing: 0.3px;
         }
 
+        /* Навігація в шапці */
         .header-nav {
             display: flex;
             align-items: center;
-            gap: 18px;
+            gap: 20px;
         }
 
         .nav-link {
-            color: #94a3b8;
+            color: #d1d5db;
             text-decoration: none;
-            font-weight: 500;
             font-size: 0.95rem;
+            font-weight: 500;
             transition: color 0.2s;
         }
 
@@ -105,100 +87,93 @@
         }
 
         .btn-portfolio {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            padding: 7px 15px;
+            border-radius: 4px;
             cursor: pointer;
             font-weight: 600;
             font-size: 0.85rem;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            transition: all 0.25s ease;
-            backdrop-filter: blur(5px);
+            gap: 6px;
+            transition: all 0.2s;
         }
 
         .btn-portfolio:hover {
-            background: var(--accent);
-            border-color: var(--accent);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(2,132,199,0.4);
+            background: #0099ff;
+            border-color: #0099ff;
         }
 
-        /* Контейнер */
+        /* ОСНОВНИЙ КОНТЕНТ */
         .main-container {
             max-width: 1200px;
-            margin: 35px auto;
+            margin: 30px auto;
             padding: 0 20px;
         }
 
         .section-title {
-            font-size: 1.35rem;
-            color: var(--primary);
-            margin-bottom: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-size: 1.3rem;
+            color: #001b40;
+            margin-bottom: 15px;
             font-weight: 700;
+            border-left: 4px solid #0099ff;
+            padding-left: 10px;
         }
 
-        /* Дисципліни (Сітка) */
+        /* СІТКА ДИСЦИПЛІН */
         .subjects-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 18px;
-            margin-bottom: 40px;
+            margin-bottom: 35px;
         }
 
         .subject-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 22px;
-            transition: all 0.25s ease;
+            background: #ffffff;
+            border: 1px solid #dcdfe6;
+            border-radius: 6px;
+            padding: 20px;
             cursor: pointer;
-            box-shadow: var(--shadow-sm);
-            display: flex;
-            flex-direction: column;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
         }
 
         .subject-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-md);
-            border-color: var(--accent);
+            border-color: #0099ff;
+            box-shadow: 0 4px 12px rgba(0, 153, 255, 0.15);
+            transform: translateY(-2px);
         }
 
         .subject-card .icon {
-            font-size: 2.2rem;
+            font-size: 2rem;
             margin-bottom: 10px;
         }
 
         .subject-card h3 {
-            font-size: 1.1rem;
-            color: var(--primary);
+            font-size: 1.05rem;
+            color: #001b40;
             margin-bottom: 6px;
         }
 
         .subject-card p {
             font-size: 0.85rem;
-            color: var(--text-muted);
+            color: #666666;
             line-height: 1.4;
         }
 
-        /* Панель Фільтрації */
+        /* БЛОК ФІЛЬТРІВ */
         .filter-bar {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            padding: 16px 22px;
-            border-radius: var(--radius);
-            margin-bottom: 25px;
+            background: #ffffff;
+            border: 1px solid #dcdfe6;
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
             align-items: center;
-            box-shadow: var(--shadow-sm);
         }
 
         .filter-group {
@@ -209,240 +184,209 @@
 
         .filter-group label {
             font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--text-muted);
+            font-weight: bold;
+            color: #001b40;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         select {
-            padding: 9px 14px;
-            border: 1.5px solid var(--border);
-            border-radius: 8px;
+            padding: 8px 12px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
             font-size: 0.9rem;
             outline: none;
-            background: white;
-            color: var(--text-main);
-            font-weight: 500;
-            cursor: pointer;
-            transition: border-color 0.2s;
+            background: #ffffff;
+            color: #333333;
         }
 
         select:focus {
-            border-color: var(--accent);
+            border-color: #0099ff;
         }
 
-        /* Список Лекцій/Матеріалів */
+        /* СПИСОК МАТЕРІАЛІВ ТА ЛЕКЦІЙ */
         .lessons-list {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 15px;
         }
 
         .lesson-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 22px;
-            box-shadow: var(--shadow-sm);
-            transition: all 0.2s ease;
-        }
-
-        .lesson-card:hover {
-            border-color: #cbd5e1;
-            box-shadow: var(--shadow-md);
+            background: #ffffff;
+            border: 1px solid #dcdfe6;
+            border-radius: 6px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
 
         .lesson-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 12px;
+            gap: 10px;
+            margin-bottom: 10px;
         }
 
         .lesson-title {
-            font-size: 1.15rem;
-            color: var(--primary);
-            font-weight: 700;
+            font-size: 1.1rem;
+            color: #001b40;
+            font-weight: bold;
         }
 
         .badges {
             display: flex;
             gap: 8px;
-            flex-wrap: wrap;
         }
 
         .badge {
             font-size: 0.75rem;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-weight: 700;
-            letter-spacing: 0.2px;
+            padding: 3px 10px;
+            border-radius: 3px;
+            font-weight: bold;
         }
 
-        .badge-discipline { background: #e0e7ff; color: #3730a3; }
-        .badge-type { background: #e0f2fe; color: #0369a1; }
+        .badge-discipline { background: #e6f2ff; color: #0056b3; }
+        .badge-type { background: #eafaf1; color: #27ae60; }
 
         .lesson-content {
-            font-size: 0.95rem;
-            color: #334155;
-            margin-bottom: 16px;
+            font-size: 0.92rem;
+            color: #444444;
+            margin-bottom: 14px;
             white-space: pre-line;
-            line-height: 1.6;
         }
 
         .btn-file {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            background: var(--accent);
-            color: white;
+            gap: 6px;
+            background: #0099ff;
+            color: #ffffff;
             text-decoration: none;
-            padding: 9px 18px;
-            border-radius: 8px;
+            padding: 8px 16px;
+            border-radius: 4px;
             font-size: 0.85rem;
-            font-weight: 600;
-            transition: background 0.2s, transform 0.2s;
+            font-weight: bold;
+            transition: background 0.2s;
         }
 
         .btn-file:hover {
-            background: var(--accent-hover);
-            transform: translateY(-1px);
+            background: #0077cc;
         }
 
-        /* Модальне вікно Портфоліо */
+        /* МОДАЛЬНЕ ВІКНО ПОРТФОЛІО */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(6px);
+            background: rgba(0, 27, 64, 0.7);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
             padding: 20px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
         }
 
         .modal-overlay.active {
             display: flex;
-            opacity: 1;
         }
 
         .modal-card {
-            background: white;
-            border-radius: 20px;
-            max-width: 580px;
+            background: #ffffff;
+            border-radius: 8px;
+            max-width: 550px;
             width: 100%;
             max-height: 85vh;
             overflow-y: auto;
-            padding: 32px;
+            padding: 25px;
             position: relative;
-            box-shadow: var(--shadow-lg);
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-        }
-
-        .modal-overlay.active .modal-card {
-            transform: translateY(0);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
 
         .close-btn {
             position: absolute;
-            top: 20px; right: 20px;
-            background: #f1f5f9;
+            top: 15px; right: 15px;
+            background: #f0f0f0;
             border: none;
-            width: 36px; height: 36px;
+            width: 32px; height: 32px;
             border-radius: 50%;
             cursor: pointer;
             font-weight: bold;
-            color: var(--text-muted);
+            color: #666666;
             font-size: 1rem;
-            transition: background 0.2s;
         }
 
-        .close-btn:hover { background: #e2e8f0; color: var(--primary); }
+        .close-btn:hover { background: #e0e0e0; color: #000000; }
 
         .profile-header {
             text-align: center;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 22px;
-            margin-bottom: 22px;
+            border-bottom: 1px solid #eeeeee;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
         }
 
         .profile-avatar {
-            font-size: 4.5rem;
+            font-size: 3.5rem;
             line-height: 1;
-            margin-bottom: 12px;
-            display: inline-block;
-            background: #f1f5f9;
-            padding: 15px;
-            border-radius: 50%;
+            margin-bottom: 10px;
         }
 
         .profile-name {
-            font-size: 1.45rem;
-            color: var(--primary);
-            font-weight: 800;
+            font-size: 1.3rem;
+            color: #001b40;
+            font-weight: bold;
         }
 
         .profile-role {
-            color: var(--accent);
+            color: #0099ff;
             font-weight: 600;
-            font-size: 0.95rem;
-            margin-top: 4px;
+            font-size: 0.9rem;
+            margin-top: 3px;
         }
 
-        .info-block { margin-bottom: 20px; }
+        .info-block { margin-bottom: 15px; }
         .info-block h4 {
             font-size: 0.8rem;
             text-transform: uppercase;
-            letter-spacing: 0.6px;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-            font-weight: 700;
+            color: #888888;
+            margin-bottom: 4px;
         }
 
         .info-block p {
-            font-size: 0.95rem;
-            color: var(--text-main);
+            font-size: 0.92rem;
+            color: #333333;
             white-space: pre-line;
         }
 
         .tags-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 6px;
+            gap: 6px;
+            margin-top: 5px;
         }
 
         .tag-item {
-            background: #e0f2fe;
-            color: #0369a1;
+            background: #e6f2ff;
+            color: #0056b3;
             font-weight: 600;
-            padding: 5px 12px;
-            border-radius: 8px;
-            font-size: 0.85rem;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
         }
     </style>
 </head>
 <body>
 
-    <!-- ШАПКА В СТИЛІ ДФКР -->
+    <!-- ОРИГІНАЛЬНА ШАПКА В СТИЛІ ДФКР -->
     <header class="site-header">
         <div class="header-container">
             <div class="brand-group">
-                <!-- Логотип (SVG академічна шапочка) -->
-                <div class="logo-box">
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Логотип (SVG-іконка) -->
+                <div class="header-logo">
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#00a2ed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
                         <path d="M6 12v5c3 3 9 3 12 0v-5"/>
                     </svg>
                 </div>
                 
-                <!-- Текст шапки -->
+                <!-- Текстовий блок -->
                 <div class="brand-text">
                     <h1 class="main-title">НАВЧАЛЬНО-МЕТОДИЧНЕ ЗАБЕЗПЕЧЕННЯ ОСВІТНІХ КОМПОНЕНТ</h1>
                     <p class="sub-title">ДНІПРОВСЬКИЙ ФАХОВИЙ КОЛЕДЖ РАДІОЕЛЕКТРОНІКИ (ДФКР)</p>
@@ -453,25 +397,25 @@
             <div class="header-nav">
                 <a href="#" class="nav-link active">Головна</a>
                 <button class="btn-portfolio" onclick="openPortfolioModal()">
-                    <span>👨‍🏫</span> Портфоліо
+                    👨‍🏫 Портфоліо
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- ОСНОВНИЙ КОНТЕНТ -->
+    <!-- ОСНОВНА ЧАСТИНА СТОРІНКИ -->
     <div class="main-container">
         
         <!-- СЕКЦІЯ ДИСЦИПЛІН -->
-        <h2 class="section-title">📚 Освітні компоненти (Дисципліни)</h2>
+        <h2 class="section-title">Освітні компоненти (Дисципліни)</h2>
         <div class="subjects-grid" id="subjects-container">
-            <p style="color: var(--text-muted);">Завантаження предметів...</p>
+            <p style="color: #666;">Завантаження дисциплін...</p>
         </div>
 
         <!-- СЕКЦІЯ МАТЕРІАЛІВ -->
-        <h2 class="section-title">📝 Навчальні матеріали та Лекції</h2>
+        <h2 class="section-title">Навчальні матеріали та лекції</h2>
         
-        <!-- Фільтри -->
+        <!-- Панель фільтрації -->
         <div class="filter-bar">
             <div class="filter-group">
                 <label for="filter-discipline">Дисципліна:</label>
@@ -487,9 +431,9 @@
             </div>
         </div>
 
-        <!-- Список лекцій -->
+        <!-- Список матеріалів -->
         <div class="lessons-list" id="lessons-container">
-            <p style="color: var(--text-muted);">Завантаження матеріалів...</p>
+            <p style="color: #666;">Завантаження матеріалів...</p>
         </div>
 
     </div>
@@ -527,6 +471,7 @@
         </div>
     </div>
 
+    <!-- СКРИПТ АВТОМАТИЧНОГО ЗАВАНТАЖЕННЯ ДАНИХ З SANITY -->
     <script>
         const SANITY_PROJECT_ID = "uld9o5j2";
         const SANITY_DATASET = "production";
@@ -574,7 +519,6 @@
             }
         }
 
-        /* --- ВІДОБРАЖЕННЯ ПОРТФОЛІО --- */
         function renderPortfolioModal(p) {
             document.getElementById('m-name').innerText = p.name || "Ім'я не вказано";
             document.getElementById('m-role').innerText = p.role || "";
@@ -605,11 +549,10 @@
             if (e.target.id === 'portfolio-modal') closePortfolioModal();
         }
 
-        /* --- ВІДОБРАЖЕННЯ ДИСЦИПЛІН --- */
         function renderSubjects(subjects) {
             const container = document.getElementById('subjects-container');
             if (subjects.length === 0) {
-                container.innerHTML = '<p style="color:var(--text-muted)">Дисциплін поки немає.</p>';
+                container.innerHTML = '<p style="color:#666">Дисциплін поки немає.</p>';
                 return;
             }
             container.innerHTML = subjects.map(s => `
@@ -621,7 +564,6 @@
             `).join('');
         }
 
-        /* --- ФІЛЬТРИ ТА ЛЕКЦІЇ --- */
         function populateSubjectFilter(subjects) {
             const select = document.getElementById('filter-discipline');
             subjects.forEach(s => {
@@ -663,7 +605,7 @@
         function renderLessons(lessons) {
             const container = document.getElementById('lessons-container');
             if (lessons.length === 0) {
-                container.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding: 30px 0;">За обраними фільтрами матеріалів не знайдено.</p>';
+                container.innerHTML = '<p style="color:#666; text-align:center; padding: 20px 0;">За обраними фільтрами матеріалів не знайдено.</p>';
                 return;
             }
 
