@@ -128,6 +128,20 @@
 				color: #0f172a; transition: all 0.2s; border: 1px solid rgba(0,0,0,0.08);
 			}
 
+			/* ВІДОБРАЖЕННЯ ЗОБРАЖЕНЬ У ЛЕКЦІЯХ */
+			.lecture-content-box { background: white; border-radius: 14px; padding: 32px; border: 1px solid var(--border-color); box-shadow: var(--shadow); line-height: 1.7; font-size: 1rem; color: #334155; }
+			.lecture-content-box img {
+				max-width: 100%;
+				height: auto;
+				border-radius: 10px;
+				margin: 16px 0;
+				display: block;
+				box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+			}
+
+			.download-card { background: #f1f5f9; border: 1px dashed var(--bright-blue); border-radius: 8px; padding: 16px; margin-top: 24px; display: flex; align-items: center; justify-content: space-between; }
+
+			/* МОДАЛЬНЕ ВІКНО */
 			@keyframes overlayFadeIn {
 				from { opacity: 0; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px); }
 				to { opacity: 1; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
@@ -239,9 +253,6 @@
 				transform: translateY(-2px);
 				box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
 			}
-
-			.lecture-content-box { background: white; border-radius: 14px; padding: 32px; border: 1px solid var(--border-color); box-shadow: var(--shadow); line-height: 1.7; font-size: 1rem; color: #334155; }
-			.download-card { background: #f1f5f9; border: 1px dashed var(--bright-blue); border-radius: 8px; padding: 16px; margin-top: 24px; display: flex; align-items: center; justify-content: space-between; }
 		</style>
 	</head>
 	<body>
@@ -302,7 +313,9 @@
 						<span id="lesson-badge" class="task-badge">Матеріал</span>
 					</div>
 					<h1 id="lesson-title" style="color: var(--deep-blue); font-size: 1.8rem; margin-bottom: 20px;">...</h1>
-					<div id="lesson-body" style="white-space: pre-line;"></div>
+					
+					<!-- ТЕКСТ ТА ФОТО ЛЕКЦІЇ -->
+					<div id="lesson-body"></div>
 
 					<div class="download-card" id="attachment-block" style="display: none;">
 						<div>
@@ -427,7 +440,9 @@
 				if (!lesson) return;
 
 				document.getElementById('lesson-title').innerText = lesson.title || 'Без назви';
-				document.getElementById('lesson-body').innerText = lesson.content || 'Текст матеріалу відсутній.';
+				
+				// ВИКОРИСТОВУЄМО innerHTML ЩОБ РЕНДЕРИТИ ТЕКСТ ТА ФОТОГРАФІЇ
+				document.getElementById('lesson-body').innerHTML = lesson.content || '<p style="color: #64748b;">Текст матеріалу відсутній.</p>';
 
 				const badge = document.getElementById('lesson-badge');
 				badge.innerText = lesson.taskType || 'Матеріал';
