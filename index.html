@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="uk" class="h-auto">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Навчально-методичне забезпечення дисциплін</title>
-  <!-- Tailwind CSS CDN для готових стилів -->
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-[#f3f4f6] min-h-screen text-slate-800 font-sans">
+<body class="bg-[#f3f4f6] text-slate-800 font-sans min-h-screen overflow-y-auto">
 
-  <!-- Шапка (без fixed / sticky, гортається разом зі сторінкою) -->
+  <!-- Шапка (в звичайному потоці, гортається разом з іншим вмістом) -->
   <header class="w-full bg-[#001b44] text-white px-5 py-4 border-b-4 border-[#0052cc]">
     <div class="max-w-2xl mx-auto flex flex-col gap-1">
       <h1 class="text-base sm:text-lg font-bold uppercase tracking-wide leading-tight">
@@ -27,9 +27,9 @@
   </header>
 
   <!-- Основний контент сторінки -->
-  <main class="max-w-2xl mx-auto px-4 py-6 flex flex-col gap-6">
+  <main class="max-w-2xl mx-auto px-4 py-6 flex flex-col gap-6 pb-12">
 
-    <!-- Картка 1 (Цифрові технології) -->
+    <!-- Картка 1 -->
     <article class="bg-white rounded-2xl shadow-sm border-t-4 border-[#001b44] p-5">
       <div class="flex items-start gap-4">
         <div class="w-12 h-12 rounded-xl bg-[#e0f2fe] flex items-center justify-center text-2xl flex-shrink-0">
@@ -51,7 +51,7 @@
       </a>
     </article>
 
-    <!-- Картка 2 (Конструювання ВЕТ і САПР) -->
+    <!-- Картка 2 -->
     <article class="bg-white rounded-2xl shadow-sm border-t-4 border-[#001b44] p-5">
       <div class="flex items-start gap-4">
         <div class="w-12 h-12 rounded-xl bg-[#e0f2fe] flex items-center justify-center text-2xl flex-shrink-0">
@@ -73,7 +73,7 @@
       </a>
     </article>
 
-    <!-- Картка 3 (Навчальна комп'ютерна практика) -->
+    <!-- Картка 3 -->
     <article class="bg-white rounded-2xl shadow-sm border-t-4 border-[#001b44] p-5">
       <div class="flex items-start gap-4">
         <div class="w-12 h-12 rounded-xl bg-[#e0f2fe] flex items-center justify-center text-2xl flex-shrink-0">
