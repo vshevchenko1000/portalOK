@@ -331,6 +331,76 @@
 
         .status-msg.success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
         .status-msg.error { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+        /* АДАПТАЦІЯ ДЛЯ МОБІЛЬНИХ ПРИСТРОЇВ */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px 10px;
+            }
+
+            .admin-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 14px;
+                padding: 16px 18px;
+            }
+
+            .token-box {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .token-box input {
+                width: 100%;
+            }
+
+            .tabs-nav {
+                gap: 6px;
+            }
+
+            .tab-btn {
+                flex: 1 1 calc(50% - 6px);
+                justify-content: center;
+                padding: 10px 8px;
+                font-size: 0.85rem;
+            }
+
+            .tab-content {
+                padding: 18px 14px;
+            }
+
+            div[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+            }
+
+            .item-card > div[style*="display: flex"] {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .item-card > div > div[style*="display:flex"],
+            .item-card > div[style*="display:flex"] > button {
+                width: 100%;
+            }
+
+            .btn-action, .btn-block-add {
+                width: 100%;
+                text-align: center;
+                justify-content: center;
+            }
+
+            div[style*="display: flex; gap: 10px;"] {
+                flex-direction: column;
+            }
+
+            .status-msg {
+                left: 10px;
+                right: 10px;
+                bottom: 10px;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
