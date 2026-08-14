@@ -808,7 +808,7 @@
             list.innerHTML = taskTypes.map(t => `
                 <div class="item-card" style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <span style="display:inline-block; padding:4px 10px; border-radius:6px; background:${escapeAttr(t.color || '#e0f2fe')}; font-weight:600; font-size:0.85rem;">
+                        <span style="display:inline-block; padding:4px 10px; border-radius:6px; background:${escapeAttr(t.color || '#e0f2fe')}; font-weight:600; font-size:0.85rem; color:#0f172a;">
                             ${escapeHTML(t.title)}
                         </span>
                     </div>
@@ -817,7 +817,104 @@
             `).join('');
         }
 
-        // --- ЛЕКЦІЇ ТА БЛОКОВИЙ РЕДАКТОР ---
+        // --- ВИПАДАЮЧІ СПИСКИ (DROPDOWNS) ---
+        function updateDropdowns() {
+            const sSelect = document.getElementById('l-discipline');
+            const tSelect = document.getElementById('l-type');
+
+            if (sSelect) {
+                const currentVal = sSelect.value;
+                sSelect.innerHTML = '<option value="">Оберіть дисципліну...</option>' + 
+                    subjects.map(s => `<option value="${s._id}">${escapeHTML(s.title)}</option>`).join('');
+                sSelect.value = currentVal;
+            }
+
+            if (tSelect) {
+                const currentVal = tSelect.value;
+                tSelect.innerHTML = '<option value="">Оберіть тип...</option>' + 
+                    taskTypes.map(t => `<option value="${t._id}">${escapeHTML(t.title)}</option>`).join('');
+                tSelect.value = currentVal;
+            }
+        }
+
+        // --- КОНСТРУКТОР БЛОКІВ ДЛЯ ЛЕКЦІЙ ---
+        function addTextBlock(initialText = '') {
+            blockCounter++;
+            const blockId = `block-${blockCounter}`;
+            const container = document.getElementById('blocks-container');
+            const div = document.createElement('div');
+            div.className = 'content-block-item';
+            div.id = blockId;
+            div.dataset.type = 'text';
+            div.innerHTML = `
+                <div class="block-header">
+                    <span class="block-title">📝 Текстовий блок</span>
+                    <div class="block-actions">
+                        <button type="button" class="btn-icon-sm" onclick="moveBlock('${blockId}', -1)">▲</button>
+                        <button type="button" class="btn-icon-sm" onclick="moveBlock('${blockId}', 1)">▼</button>
+                        <button type="button" class="btn-icon-sm" style="color:var(--danger-red);" onclick="removeBlock('${blockId}')">✕</button>
+                    </div>
+                </div>
+                <textarea class="block-text-input" placeholder="Введіть текст або HTML..." style="width:100%; min-height:80px;">${escapeHTML(initialText)}</textarea>
+            `;
+            container.appendChild(div);
+        }
+
+        function addImageBlock(initialUrl = '', initialCaption = '') {
+            blockCounter++;
+            const blockId = `block-${blockCounter}`;
+            const container = document.getElementById('blocks-container');
+            const div = document.createElement('div');
+            div.className = 'content-block-item';
+            div.id = blockId;
+            div.dataset.type = 'image';
+            div.innerHTML = `
+                <div class="block-header">
+                    <span class="block-title">🖼️ Зображення</span>
+                    <div class="block-actions">
+                        <button type="button" class="btn-icon-sm" onclick="moveBlock('${blockId}', -1)">▲</button>
+                        <button type="button" class="btn-icon-sm" onclick="moveBlock('${blockId}', 1)">▼</button>
+                        <button type="button" class="btn-icon-sm" style="color:var(--danger-red);" onclick="removeBlock('${blockId}')">✕</button>
+                    </div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <input type="text" class="block-img-url" placeholder="URL зображення (https://...)" value="${escapeAttr(initialUrl)}" oninput="updateImagePreview('${blockId}', this.value)">
+                    <input type="text" class="block-img-caption" placeholder="Підпис до фото (необов'язково)" value="${escapeAttr(initialCaption)}">
+                    <div class="image-preview-container" id="preview-${blockId}" style="${initialUrl ? '' : 'display:none;'}">
+                        <img src="${escapeAttr(initialUrl)}" alt="Preview" onerror="this.parentElement.style.display='none'">
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function updateImagePreview(blockId, url) {
+            const previewContainer = document.getElementById(`preview-${blockId}`);
+            if (!previewContainer) return;
+            if (url.trim()) {
+                previewContainer.style.display = 'flex';
+                previewContainer.innerHTML = `<img src="${escapeAttr(url)}" alt="Preview" onerror="this.parentElement.style.display='none'">`;
+            } else {
+                previewContainer.style.display = 'none';
+            }
+        }
+
+        function removeBlock(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        function moveBlock(id, direction) {
+            const container = document.getElementById('blocks-container');
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (direction === -1 && el.previousElementSibling) {
+                container.insertBefore(el, el.previousElementSibling);
+            } else if (direction === 1 && el.nextElementSibling) {
+                container.insertBefore(el.nextElementSibling, el);
+            }
+        }
+
         function toggleRawHtmlMode() {
             isRawHtmlMode = !isRawHtmlMode;
             const blockWrapper = document.getElementById('block-editor-wrapper');
@@ -825,163 +922,113 @@
             const toggleBtn = document.getElementById('toggle-mode-btn');
 
             if (isRawHtmlMode) {
-                document.getElementById('l-content').value = compileBlocksToHTML();
+                const html = compileBlocksToHtml();
+                document.getElementById('l-content').value = html;
                 blockWrapper.style.display = 'none';
                 rawWrapper.style.display = 'block';
-                toggleBtn.innerText = '🧩 Конструктор Блоків';
+                toggleBtn.innerText = '🧱 Режим конструктора';
             } else {
-                rawWrapper.style.display = 'none';
+                const html = document.getElementById('l-content').value;
+                parseHtmlToBlocks(html);
                 blockWrapper.style.display = 'block';
+                rawWrapper.style.display = 'none';
                 toggleBtn.innerText = '📄 Режим HTML-коду';
             }
         }
 
-        function addTextBlock(text = '', heading = 'p') {
-            blockCounter++;
-            const id = `block-${blockCounter}`;
-            const container = document.getElementById('blocks-container');
-
-            const div = document.createElement('div');
-            div.className = 'content-block-item';
-            div.id = id;
-            div.setAttribute('data-type', 'text');
-
-            div.innerHTML = `
-                <div class="block-header">
-                    <div class="block-title">📝 Текстовий блок</div>
-                    <div class="block-actions">
-                        <button type="button" class="btn-icon-sm" onclick="moveBlockUp('${id}')">⬆️</button>
-                        <button type="button" class="btn-icon-sm" onclick="moveBlockDown('${id}')">⬇️</button>
-                        <button type="button" class="btn-icon-sm" style="color:var(--danger-red);" onclick="removeBlock('${id}')">🗑️</button>
-                    </div>
-                </div>
-                <div style="display: flex; gap: 10px; margin-bottom: 8px;">
-                    <select class="block-text-type" style="width: 200px; padding: 6px 10px;">
-                        <option value="p" ${heading === 'p' ? 'selected' : ''}>Звичайний текст</option>
-                        <option value="h2" ${heading === 'h2' ? 'selected' : ''}>Заголовок (H2)</option>
-                        <option value="h3" ${heading === 'h3' ? 'selected' : ''}>Підзаголовок (H3)</option>
-                        <option value="blockquote" ${heading === 'blockquote' ? 'selected' : ''}>Цитата / Виділений текст</option>
-                    </select>
-                </div>
-                <textarea class="block-text-content" style="min-height: 80px;" placeholder="Введіть текст матеріалу...">${escapeHTML(text)}</textarea>
-            `;
-
-            container.appendChild(div);
-        }
-
-        function addImageBlock(imgUrl = '', caption = '') {
-            blockCounter++;
-            const id = `block-${blockCounter}`;
-            const container = document.getElementById('blocks-container');
-
-            const div = document.createElement('div');
-            div.className = 'content-block-item';
-            div.id = id;
-            div.setAttribute('data-type', 'image');
-
-            div.innerHTML = `
-                <div class="block-header">
-                    <div class="block-title">🖼️ Блок з фото / зображенням</div>
-                    <div class="block-actions">
-                        <button type="button" class="btn-icon-sm" onclick="moveBlockUp('${id}')">⬆️</button>
-                        <button type="button" class="btn-icon-sm" onclick="moveBlockDown('${id}')">⬇️</button>
-                        <button type="button" class="btn-icon-sm" style="color:var(--danger-red);" onclick="removeBlock('${id}')">🗑️</button>
-                    </div>
-                </div>
-                
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <div>
-                        <label style="font-size: 0.78rem; text-transform: none;">Посилання на фото (URL):</label>
-                        <input type="text" class="block-image-url" placeholder="https://..." value="${escapeAttr(imgUrl)}" oninput="updateImagePreview('${id}')">
-                    </div>
-                    <div>
-                        <label style="font-size: 0.78rem; text-transform: none;">Підпис до фото (необов'язково):</label>
-                        <input type="text" class="block-image-caption" placeholder="Наприклад: Схема роботи..." value="${escapeAttr(caption)}">
-                    </div>
-                    <div class="image-preview-container" id="preview-${id}" style="${imgUrl ? '' : 'display:none;'}">
-                        <img src="${escapeAttr(imgUrl)}" alt="Прев'ю">
-                    </div>
-                </div>
-            `;
-            container.appendChild(div);
-        }
-
-        function updateImagePreview(id) {
-            const block = document.getElementById(id);
-            if (!block) return;
-            const url = block.querySelector('.block-image-url').value.trim();
-            const previewContainer = document.getElementById(`preview-${id}`);
-            if (url) {
-                previewContainer.style.display = 'flex';
-                previewContainer.querySelector('img').src = url;
-            } else {
-                previewContainer.style.display = 'none';
-            }
-        }
-
-        function moveBlockUp(id) {
-            const block = document.getElementById(id);
-            if (block && block.previousElementSibling) {
-                block.parentNode.insertBefore(block, block.previousElementSibling);
-            }
-        }
-
-        function moveBlockDown(id) {
-            const block = document.getElementById(id);
-            if (block && block.nextElementSibling) {
-                block.parentNode.insertBefore(block.nextElementSibling, block);
-            }
-        }
-
-        function removeBlock(id) {
-            const block = document.getElementById(id);
-            if (block) block.remove();
-        }
-
-        function compileBlocksToHTML() {
+        function compileBlocksToHtml() {
             if (isRawHtmlMode) {
                 return document.getElementById('l-content').value;
             }
             const container = document.getElementById('blocks-container');
             const blocks = container.querySelectorAll('.content-block-item');
-            let html = '';
+            let htmlParts = [];
 
             blocks.forEach(block => {
-                const type = block.getAttribute('data-type');
+                const type = block.dataset.type;
                 if (type === 'text') {
-                    const tag = block.querySelector('.block-text-type').value;
-                    const val = block.querySelector('.block-text-content').value.trim();
-                    if (val) {
-                        if (tag === 'blockquote') {
-                            html += `<blockquote>${escapeHTML(val)}</blockquote>\n`;
-                        } else {
-                            html += `<${tag}>${escapeHTML(val)}</${tag}>\n`;
-                        }
+                    const text = block.querySelector('.block-text-input').value;
+                    if (text.trim()) {
+                        htmlParts.push(text.trim());
                     }
                 } else if (type === 'image') {
-                    const url = block.querySelector('.block-image-url').value.trim();
-                    const caption = block.querySelector('.block-image-caption').value.trim();
+                    const url = block.querySelector('.block-img-url').value.trim();
+                    const caption = block.querySelector('.block-img-caption').value.trim();
                     if (url) {
-                        html += `<figure><img src="${escapeAttr(url)}" alt="${escapeAttr(caption)}">${caption ? `<figcaption>${escapeHTML(caption)}</figcaption>` : ''}</figure>\n`;
+                        let imgHtml = `<figure style="margin: 15px 0; text-align: center;"><img src="${escapeAttr(url)}" style="max-width: 100%; border-radius: 8px;" />`;
+                        if (caption) {
+                            imgHtml += `<figcaption style="font-size: 0.85rem; color: #64748b; margin-top: 5px;">${escapeHTML(caption)}</figcaption>`;
+                        }
+                        imgHtml += `</figure>`;
+                        htmlParts.push(imgHtml);
                     }
                 }
             });
-            return html;
+
+            return htmlParts.join('\n\n');
         }
 
+        function parseHtmlToBlocks(html) {
+            const container = document.getElementById('blocks-container');
+            container.innerHTML = '';
+            if (!html || !html.trim()) {
+                addTextBlock();
+                return;
+            }
+
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            let currentTextBlock = '';
+
+            Array.from(tempDiv.childNodes).forEach(node => {
+                if (node.nodeType === Node.ELEMENT_NODE && (node.tagName === 'FIGURE' || node.tagName === 'IMG')) {
+                    if (currentTextBlock.trim()) {
+                        addTextBlock(currentTextBlock.trim());
+                        currentTextBlock = '';
+                    }
+                    let imgUrl = '';
+                    let caption = '';
+                    if (node.tagName === 'FIGURE') {
+                        const img = node.querySelector('img');
+                        if (img) imgUrl = img.getAttribute('src') || '';
+                        const cap = node.querySelector('figcaption');
+                        if (cap) caption = cap.innerText || '';
+                    } else if (node.tagName === 'IMG') {
+                        imgUrl = node.getAttribute('src') || '';
+                    }
+                    if (imgUrl) {
+                        addImageBlock(imgUrl, caption);
+                    }
+                } else {
+                    currentTextBlock += node.outerHTML || node.textContent || '';
+                }
+            });
+
+            if (currentTextBlock.trim()) {
+                addTextBlock(currentTextBlock.trim());
+            }
+
+            if (container.children.length === 0) {
+                addTextBlock();
+            }
+        }
+
+        // --- ЛЕКЦІЇ ТА МАТЕРІАЛИ ---
         async function saveLesson(e) {
             e.preventDefault();
             const token = getToken();
             if (!token) return;
 
             const id = document.getElementById('l-id').value;
-            const content = compileBlocksToHTML();
+            const content = compileBlocksToHtml();
+            const subjectId = document.getElementById('l-discipline').value;
+            const typeId = document.getElementById('l-type').value;
 
             const docData = {
                 _type: 'lesson',
                 title: document.getElementById('l-title').value,
-                subjectId: document.getElementById('l-discipline').value,
-                typeId: document.getElementById('l-type').value,
+                subject: { _type: 'reference', _ref: subjectId },
+                taskType: { _type: 'reference', _ref: typeId },
                 content: content,
                 fileUrl: document.getElementById('l-file').value
             };
@@ -990,7 +1037,7 @@
                 docData._id = id;
                 await mutateSanity([{ createOrReplace: docData }], token, "Матеріал успішно оновлено!");
             } else {
-                await mutateSanity([{ create: docData }], token, "Матеріал додано!");
+                await mutateSanity([{ create: docData }], token, "Матеріал опубліковано!");
             }
 
             resetLessonForm();
@@ -1003,13 +1050,14 @@
 
             document.getElementById('l-id').value = l._id;
             document.getElementById('l-title').value = l.title || '';
-            document.getElementById('l-discipline').value = l.subjectId || '';
-            document.getElementById('l-type').value = l.typeId || '';
+            document.getElementById('l-discipline').value = l.subject?._ref || l.subject?._id || '';
+            document.getElementById('l-type').value = l.taskType?._ref || l.taskType?._id || '';
             document.getElementById('l-file').value = l.fileUrl || '';
 
-            document.getElementById('l-content').value = l.content || '';
-            if (!isRawHtmlMode) {
-                toggleRawHtmlMode();
+            if (isRawHtmlMode) {
+                document.getElementById('l-content').value = l.content || '';
+            } else {
+                parseHtmlToBlocks(l.content || '');
             }
 
             document.getElementById('lesson-form-title').innerText = '✏️ Редагування Матеріалу';
@@ -1027,10 +1075,8 @@
             document.getElementById('l-file').value = '';
             document.getElementById('l-content').value = '';
 
-            document.getElementById('blocks-container').innerHTML = '';
-            if (isRawHtmlMode) {
-                toggleRawHtmlMode();
-            }
+            const container = document.getElementById('blocks-container');
+            container.innerHTML = '';
             addTextBlock();
 
             document.getElementById('lesson-form-title').innerText = 'Додавання Нової Лекції / Завдання';
@@ -1041,57 +1087,42 @@
         function renderLessonsAdmin() {
             const list = document.getElementById('lessons-admin-list');
             if (lessons.length === 0) { list.innerHTML = '<p class="hint">Немає матеріалів.</p>'; return; }
+
             list.innerHTML = lessons.map(l => {
-                const subj = subjects.find(s => s._id === l.subjectId);
-                const type = taskTypes.find(t => t._id === l.typeId);
+                const subj = subjects.find(s => s._id === (l.subject?._ref || l.subject?._id));
+                const type = taskTypes.find(t => t._id === (l.taskType?._ref || l.taskType?._id));
+
                 return `
                     <div class="item-card">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;">
                             <div>
-                                <strong style="font-size:1rem;">${escapeHTML(l.title)}</strong>
-                                <div style="margin-top:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                                    <span style="font-size:0.8rem; background:#e2e8f0; padding:2px 8px; border-radius:4px;">
-                                        ${subj ? escapeHTML(subj.title) : 'Без дисципліни'}
-                                    </span>
-                                    ${type ? `<span style="font-size:0.8rem; background:${escapeAttr(type.color || '#e0f2fe')}; padding:2px 8px; border-radius:4px; font-weight:600;">${escapeHTML(type.title)}</span>` : ''}
+                                <strong style="font-size: 1.05rem;">${escapeHTML(l.title)}</strong>
+                                <div style="display:flex; gap:8px; align-items:center; margin-top:6px; flex-wrap:wrap;">
+                                    ${subj ? `<span style="font-size:0.8rem; background:#f1f5f9; padding:2px 8px; border-radius:4px; font-weight:600;">📚 ${escapeHTML(subj.title)}</span>` : ''}
+                                    ${type ? `<span style="font-size:0.8rem; background:${escapeAttr(type.color || '#e0f2fe')}; padding:2px 8px; border-radius:4px; font-weight:600;">🏷️ ${escapeHTML(type.title)}</span>` : ''}
                                 </div>
                             </div>
-                            <div style="display:flex; gap:8px;">
+                            <div style="display:flex; gap:8px; flex-shrink:0;">
                                 <button class="btn-action" style="padding:6px 12px; font-size:0.85rem;" onclick="editLesson('${l._id}')">✏️ Редагувати</button>
                                 <button class="btn-delete" onclick="deleteDoc('${l._id}')">Видалити</button>
                             </div>
                         </div>
+                        ${l.fileUrl ? `<div style="margin-top:10px;"><a href="${escapeAttr(l.fileUrl)}" target="_blank" class="btn-doc">📎 Прикріплений файл</a></div>` : ''}
                     </div>
                 `;
             }).join('');
         }
 
-        function updateDropdowns() {
-            const sSelect = document.getElementById('l-discipline');
-            const tSelect = document.getElementById('l-type');
+        // --- ВПОДОБАЙКИ / СПОВІЩЕННЯ ТА ДОПОМІЖНІ ФУНКЦІЇ ---
+        function showStatus(msg, type = 'success') {
+            const statusEl = document.getElementById('status');
+            statusEl.className = `status-msg ${type}`;
+            statusEl.innerText = msg;
+            statusEl.style.display = 'block';
 
-            if (sSelect) {
-                const currentS = sSelect.value;
-                sSelect.innerHTML = '<option value="">Оберіть дисципліну...</option>' + 
-                    subjects.map(s => `<option value="${s._id}">${s.icon || '📚'} ${escapeHTML(s.title)}</option>`).join('');
-                sSelect.value = currentS;
-            }
-
-            if (tSelect) {
-                const currentT = tSelect.value;
-                tSelect.innerHTML = '<option value="">Оберіть тип...</option>' + 
-                    taskTypes.map(t => `<option value="${t._id}">${escapeHTML(t.title)}</option>`).join('');
-                tSelect.value = currentT;
-            }
-        }
-
-        // --- ХЕЛПЕРИ ---
-        function showStatus(msg, type) {
-            const el = document.getElementById('status');
-            el.className = `status-msg ${type}`;
-            el.innerText = msg;
-            el.style.display = 'block';
-            setTimeout(() => { el.style.display = 'none'; }, 4000);
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 4000);
         }
 
         function escapeHTML(str) {
@@ -1105,8 +1136,7 @@
         }
 
         function escapeAttr(str) {
-            if (!str) return '';
-            return String(str).replace(/"/g, '&quot;');
+            return escapeHTML(str);
         }
     </script>
 </body>
