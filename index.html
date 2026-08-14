@@ -29,6 +29,7 @@
 				flex-direction: column;
 			}
 
+			/* --- Шапка --- */
 			header {
 				background: var(--deep-blue);
 				color: white;
@@ -59,6 +60,7 @@
 				to { opacity: 1; transform: translateY(0); }
 			}
 
+			/* --- Hero Банер --- */
 			.hero {
 				background: linear-gradient(135deg, #001b4c 0%, #003380 100%);
 				color: white; border-radius: 16px; padding: 30px; margin-bottom: 32px;
@@ -67,6 +69,7 @@
 			.hero-text h1 { font-size: 1.8rem; margin-bottom: 8px; }
 			.hero-text p { color: #cbd5e1; font-size: 0.95rem; max-width: 600px; }
 
+			/* Візитка портфоліо */
 			.teacher-badge {
 				display: flex; align-items: center; gap: 12px;
 				background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(8px);
@@ -109,6 +112,21 @@
 			.lesson-type-badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
 			.badge-lecture { background: #e0f2fe; color: #0369a1; }
 
+			/* --- Модальне вікно портфоліо --- */
+			.modal-overlay {
+				position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+				background: rgba(0, 27, 76, 0.6); backdrop-filter: blur(4px);
+				display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
+			}
+			.modal-card {
+				background: white; border-radius: 18px; max-width: 550px; width: 100%;
+				padding: 28px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+			}
+			.close-modal-btn {
+				position: absolute; top: 16px; right: 16px; background: #f1f5f9; border: none;
+				width: 32px; height: 32px; border-radius: 50%; font-size: 1rem; cursor: pointer;
+			}
+
 			.lecture-content-box { background: white; border-radius: 14px; padding: 32px; border: 1px solid var(--border-color); box-shadow: var(--shadow); line-height: 1.7; font-size: 1rem; color: #334155; }
 			.lecture-content-box h2 { color: var(--deep-blue); margin: 20px 0 10px 0; }
 			.lecture-content-box p { margin-bottom: 14px; white-space: pre-line; }
@@ -135,6 +153,13 @@
 					<div class="hero-text">
 						<h1>Вітаємо на навчальному порталі!</h1>
 						<p>Оберіть потрібну дисципліну для переходу до електронних підручників, лекцій та лабораторних матеріалів.</p>
+					</div>
+					<div class="teacher-badge" onclick="openPortfolioModal()" title="Натисніть, щоб відкрити портфоліо">
+						<div class="teacher-avatar">👨‍🏫</div>
+						<div>
+							<div style="font-size: 0.9rem; font-weight:700;">Портфоліо</div>
+							<div style="font-size: 0.78rem; color: var(--bright-blue); font-weight: 600;">Візитка →</div>
+						</div>
 					</div>
 				</section>
 
@@ -181,6 +206,26 @@
 			</div>
 		</main>
 
+		<!-- МОДАЛЬНЕ ВІКНО ПОРТФОЛІО -->
+		<div class="modal-overlay" id="portfolioModal" onclick="closePortfolioOutside(event)">
+			<div class="modal-card">
+				<button class="close-modal-btn" onclick="closePortfolioModal()">✕</button>
+				<div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
+					<div class="teacher-avatar" style="width:60px; height:60px; font-size:1.8rem;">👨‍🏫</div>
+					<div>
+						<h3 style="color:var(--deep-blue); font-size:1.2rem;">Викладач спецдисциплін ДФКР</h3>
+						<p style="color:var(--bright-blue); font-size:0.85rem; font-weight:600;">Спеціаліст вищої категорії</p>
+					</div>
+				</div>
+				<p style="font-size:0.9rem; color:var(--text-muted); line-height:1.5; margin-bottom:12px;">
+					Вітаємо! На цьому порталі зібрано матеріали з дисциплін радіоелектроніки, комп'ютерного проєктування (САПР) та інтернет-технологій.
+				</p>
+				<div style="font-size:0.85rem; background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
+					<strong>📬 Контакти:</strong> Кабінет 304 | teacher@dfkr.edu.ua
+				</div>
+			</div>
+		</div>
+
 		<script>
 			const SANITY_PROJECT_ID = "uld9o5j2"; 
 			const SANITY_DATASET = "production";
@@ -192,12 +237,12 @@
 			// Завантаження всіх даних із Sanity
 			async function loadPortalData() {
 				try {
-					// 1. Отримуємо дисципліни
+					// Дисципліни
 					const subRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "subject"]')}`);
 					const subData = await subRes.json();
 					subjectsList = subData.result || [];
 
-					// 2. Отримуємо лекції
+					// Лекції
 					const lesRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "lesson"]')}`);
 					const lesData = await lesRes.json();
 					lessonsList = lesData.result || [];
@@ -260,7 +305,7 @@
 			function renderSubjects() {
 				const container = document.getElementById('subjects-container');
 				if(subjectsList.length === 0) {
-					container.innerHTML = '<p style="color: #64748b;">Дисциплін поки немає. Додайте їх у розділі /admin.html!</p>';
+					container.innerHTML = '<p style="color: #64748b;">Дисциплін поки немає. Створіть першу дисципліну в адмінці (/admin.html)!</p>';
 					return;
 				}
 
@@ -309,6 +354,11 @@
 				if (!text) return '';
 				return text.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '<br>');
 			}
+
+			// Модальне вікно Портфоліо
+			function openPortfolioModal() { document.getElementById('portfolioModal').style.display = 'flex'; }
+			function closePortfolioModal() { document.getElementById('portfolioModal').style.display = 'none'; }
+			function closePortfolioOutside(e) { if (e.target.classList.contains('modal-overlay')) closePortfolioModal(); }
 
 			document.addEventListener('DOMContentLoaded', loadPortalData);
 		</script>
