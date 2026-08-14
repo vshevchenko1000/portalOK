@@ -603,12 +603,11 @@
 
 			function renderLessonsList() {
 				const container = document.getElementById('modules-container');
-				let filtered = lessonsList.filter(l => l.discipline === currentSubject.title);
-
-				if (activeFilter !== 'ALL') {
-					filtered = filtered.filter(l => l.taskType === activeFilter);
-				}
-
+				// ✅ СТАЛО (працює за ID)
+let filtered = lessonsList.filter(l => l.subjectId === currentSubject._id);
+if (activeFilter !== 'ALL') {
+    filtered = filtered.filter(l => l.typeId === activeFilter);
+}
 				if (filtered.length > 0) {
 					container.innerHTML = `
 						<div class="module-block">
