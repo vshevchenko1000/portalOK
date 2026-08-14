@@ -3,22 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Панель управління викладача | ДФКР</title>
-
-    <!-- Quill Editor CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
-
+    <title>Панель управління — ДФКР</title>
     <style>
         :root {
-            --deep-blue: #001b4c;
-            --bright-blue: #00a3ff;
+            --deep-blue: #0f172a;
+            --bright-blue: #0284c7;
+            --bright-blue-hover: #0369a1;
             --bg-color: #f8fafc;
             --card-bg: #ffffff;
+            --border-color: #e2e8f0;
             --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-color: #cbd5e1;
-            --green: #10b981;
-            --amber: #f59e0b;
+            --danger-red: #ef4444;
+            --radius: 12px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -27,648 +23,599 @@
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            padding: 30px 15px;
+            padding: 25px 20px;
         }
 
-        .admin-wrapper {
+        /* Шапка адмінки */
+        .admin-header {
             max-width: 900px;
-            margin: 0 auto;
+            margin: 0 auto 25px auto;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            padding: 22px 28px;
+            border-radius: var(--radius);
             display: flex;
-            flex-direction: column;
-            gap: 24px;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 25px rgba(15,23,42,0.15);
         }
 
-        .header-bar {
+        .token-box {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 14px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .token-box input {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 0.85rem;
+            width: 180px;
+            outline: none;
+        }
+
+        .token-box input::placeholder { color: #94a3b8; }
+
+        /* Навігація вкладок */
+        .tabs-nav {
+            max-width: 900px;
+            margin: 0 auto 20px auto;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: white;
+            border: 1.5px solid var(--border-color);
+            padding: 11px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+        }
+
+        .tab-btn:hover { border-color: var(--bright-blue); color: var(--bright-blue); }
+        .tab-btn.active {
             background: var(--deep-blue);
             color: white;
-            padding: 24px 30px;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            border-color: var(--deep-blue);
+            box-shadow: 0 4px 12px rgba(15,23,42,0.15);
         }
 
-        .header-bar h1 {
-            font-size: 1.4rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .header-bar p {
-            font-size: 0.85rem;
-            color: var(--bright-blue);
-            margin-top: 4px;
-        }
-
-        .card {
+        /* Контент вкладок */
+        .tab-content {
+            max-width: 900px;
+            margin: 0 auto;
             background: var(--card-bg);
-            border-radius: 16px;
+            border-radius: var(--radius);
             padding: 28px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            display: none;
         }
 
-        .card-title {
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: var(--deep-blue);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid var(--bg-color);
-        }
+        .tab-content.active { display: block; }
 
-        .form-grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
+        .form-group { margin-bottom: 18px; }
 
-        .form-grid-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-
-        @media (max-width: 640px) {
-            .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            font-size: 0.88rem;
+        label {
+            display: block;
             font-weight: 700;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
             color: var(--deep-blue);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
         }
 
-        .form-control {
+        input[type="text"], textarea, select {
             width: 100%;
-            padding: 11px 14px;
-            border: 2px solid var(--border-color);
-            border-radius: 10px;
-            font-size: 0.95rem;
-            outline: none;
-            transition: all 0.2s;
-            background: #ffffff;
-            font-family: inherit;
-        }
-
-        .form-control:focus {
-            border-color: var(--bright-blue);
-            box-shadow: 0 0 0 3px rgba(0, 163, 255, 0.15);
-        }
-
-        textarea.form-control {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        /* Quill Editor */
-        .ql-toolbar.ql-snow {
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
-            border-color: var(--border-color) !important;
-            background: #f8fafc;
-        }
-
-        .ql-container.ql-snow {
-            border-bottom-left-radius: 10px;
-            border-bottom-right-radius: 10px;
-            border-color: var(--border-color) !important;
-            min-height: 220px;
-            font-size: 1rem;
-            font-family: inherit;
-        }
-
-        .ql-editor img {
-            max-width: 100%;
-            height: auto;
+            padding: 11px 15px;
+            border: 1.5px solid var(--border-color);
             border-radius: 8px;
-            margin: 10px 0;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            background: #fff;
         }
 
-        .btn-btn {
+        input[type="text"]:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--bright-blue);
+        }
+
+        textarea { resize: vertical; min-height: 90px; }
+
+        .hint { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
+
+        .btn-action {
             background: var(--bright-blue);
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 12px 26px;
+            border-radius: 8px;
             font-size: 0.95rem;
             font-weight: 700;
-            border-radius: 10px;
             cursor: pointer;
-            display: inline-flex;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-action:hover {
+            background: var(--bright-blue-hover);
+            transform: translateY(-1px);
+        }
+
+        /* Список створених елементів */
+        .items-list {
+            margin-top: 30px;
+            border-top: 2px dashed var(--border-color);
+            padding-top: 22px;
+        }
+
+        .item-card {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 10px rgba(0, 163, 255, 0.2);
         }
 
-        .btn-btn:hover {
-            background: #008be0;
-            transform: translateY(-2px);
-        }
-
-        .btn-btn:disabled {
-            background: #94a3b8;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .btn-secondary {
-            background: #e2e8f0;
-            color: var(--text-main);
-            box-shadow: none;
-        }
-
-        .btn-secondary:hover {
-            background: #cbd5e1;
-        }
-
-        .token-card {
-            background: #fffbebf5;
-            border: 2px dashed #fde68a;
-            border-radius: 14px;
-            padding: 18px;
-        }
-
-        .mode-select-box {
-            background: #f1f5f9;
-            border: 2px solid var(--bright-blue);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 20px;
-        }
-
-        .status-msg {
+        .btn-delete {
+            background: #fee2e2;
+            color: var(--danger-red);
+            border: none;
+            padding: 7px 14px;
+            border-radius: 6px;
+            font-weight: 700;
             font-size: 0.85rem;
-            font-weight: 600;
-            margin-top: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
         }
 
-        .status-msg.success { color: var(--green); }
-        .status-msg.error { color: #ef4444; }
+        .btn-delete:hover { background: #fca5a5; }
+
+        /* Повідомлення про статус */
+        .status-msg {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            padding: 14px 22px;
+            border-radius: 10px;
+            font-weight: 700;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            z-index: 1000;
+        }
+
+        .status-msg.success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+        .status-msg.error { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
     </style>
 </head>
 <body>
 
-    <div class="admin-wrapper">
-        <!-- HEADER -->
-        <div class="header-bar">
-            <div>
-                <h1>⚙️ Панель управління викладача</h1>
-                <p>Дніпровський фаховий коледж радіоелектроніки</p>
-            </div>
-            <a href="index.html" target="_blank" style="color: white; text-decoration: none; background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: 8px; font-weight:600; font-size: 0.88rem;">Перейти на сайт ↗</a>
+    <div class="admin-header">
+        <div>
+            <h2>⚙️ Панель Управління ДФКР</h2>
+            <p style="font-size: 0.85rem; opacity: 0.8; margin-top: 4px;">Керування матеріалами, дисциплінами та портфоліо</p>
         </div>
-
-        <!-- TOKEN CARD -->
-        <div class="token-card">
-            <div class="form-group" style="margin-bottom:0;">
-                <label for="sanityToken">🔑 Sanity Write Token (збережеться автоматично):</label>
-                <input type="password" id="sanityToken" class="form-control" placeholder="sk..." onchange="saveToken()" />
-                <span style="font-size:0.78rem; color:#92400e; margin-top:4px;">Токен необхідний для внесення та збереження змін у базі даних Sanity.</span>
-            </div>
-        </div>
-
-        <!-- 1. НАЛАШТУВАННЯ ПОРТФОЛІО -->
-        <div class="card">
-            <div class="card-title">👤 1. Редагувати портфоліо викладача</div>
-            <form id="portfolioForm" onsubmit="savePortfolio(event)">
-                <div class="form-grid-3">
-                    <div class="form-group">
-                        <label for="portName">ПІБ Викладача:</label>
-                        <input type="text" id="portName" class="form-control" placeholder="Іванов Іван Іванович" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="portRole">Посада / Статус:</label>
-                        <input type="text" id="portRole" class="form-control" placeholder="Викладач вищої категорії" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="portAvatar">Аватар (Emoji):</label>
-                        <input type="text" id="portAvatar" class="form-control" placeholder="👨‍🏫" maxlength="4" required />
-                    </div>
-                </div>
-
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label for="portColor">Акцентний колір кнопки:</label>
-                        <input type="color" id="portColor" class="form-control" style="height: 44px; padding: 4px;" value="#00a3ff" />
-                    </div>
-                    <div class="form-group">
-                        <label for="portContacts">Контакти (Email, Telegram):</label>
-                        <input type="text" id="portContacts" class="form-control" placeholder="email@dfkr.dp.ua | @telegram" />
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="portBio">Коротка біографія / Інформація:</label>
-                    <textarea id="portBio" class="form-control" placeholder="Відомості про викладача, години консультацій..."></textarea>
-                </div>
-
-                <button type="submit" id="btnSavePortfolio" class="btn-btn">💾 Оновити портфоліо</button>
-                <div id="msgPortfolio" class="status-msg"></div>
-            </form>
-        </div>
-
-        <!-- 2. СТВОРИТИ ДИСЦИПЛІНУ -->
-        <div class="card">
-            <div class="card-title">📚 2. Додати нову дисципліну</div>
-            <form id="subjectForm" onsubmit="saveSubject(event)">
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label for="subTitle">Назва дисципліни:</label>
-                        <input type="text" id="subTitle" class="form-control" placeholder="Основи інтернет-технологій" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="subIcon">Іконка (Emoji):</label>
-                        <input type="text" id="subIcon" class="form-control" placeholder="🌐" maxlength="4" required />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="subDesc">Короткий опис дисципліни:</label>
-                    <input type="text" id="subDesc" class="form-control" placeholder="Курс присвячений розробці веб-сайтів..." />
-                </div>
-
-                <button type="submit" id="btnSaveSubject" class="btn-btn">➕ Додати дисципліну</button>
-                <div id="msgSubject" class="status-msg"></div>
-            </form>
-        </div>
-
-        <!-- 3. СТВОРИТИ ТИП ЗАВДАННЯ -->
-        <div class="card">
-            <div class="card-title">🏷️ 3. Додати тип завдання (тег)</div>
-            <form id="taskTypeForm" onsubmit="saveTaskType(event)">
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label for="ttTitle">Назва типу завдання:</label>
-                        <input type="text" id="ttTitle" class="form-control" placeholder="Практична робота, Лекція..." required />
-                    </div>
-                    <div class="form-group">
-                        <label for="ttColor">Колір плашки (HEX / CSS):</label>
-                        <input type="color" id="ttColor" class="form-control" style="height: 44px; padding: 4px;" value="#e0f2fe" />
-                    </div>
-                </div>
-
-                <button type="submit" id="btnSaveTaskType" class="btn-btn">🏷️ Додати тип завдання</button>
-                <div id="msgTaskType" class="status-msg"></div>
-            </form>
-        </div>
-
-        <!-- 4. ОПУБЛІКУВАТИ АБО РЕДАГУВАТИ МАТЕРІАЛ -->
-        <div class="card">
-            <div class="card-title">
-                <span id="formTitleText">📝 4. Опублікувати або редагувати матеріал</span>
-            </div>
-
-            <!-- Вибір режиму створення або редагування -->
-            <div class="mode-select-box">
-                <label for="editLessonSelect" style="font-weight:700; color:var(--deep-blue); display:block; margin-bottom:8px;">
-                    ⚙️ Оберіть дію або існуючий матеріал для редагування:
-                </label>
-                <select id="editLessonSelect" class="form-control" onchange="handleSelectLessonToEdit()">
-					<option value="NEW">➕ Створити новий матеріал</option>
-				</select>
-            </div>
-
-            <form id="publishForm" onsubmit="handlePublishLesson(event)">
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label for="subjectSelect">Дисципліна:</label>
-                        <select id="subjectSelect" class="form-control" required>
-                            <option value="">Завантаження...</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="taskTypeSelect">Тип завдання:</label>
-                        <select id="taskTypeSelect" class="form-control" required>
-                            <option value="">Завантаження...</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="lessonTitle">Тема / Назва матеріалу:</label>
-                    <input type="text" id="lessonTitle" class="form-control" placeholder="Лекція 1. Вступ..." required />
-                </div>
-
-                <!-- Візуальний редактор Quill з підтримкою фото -->
-                <div class="form-group">
-                    <label>Текст матеріалу (додавайте текст, формати та фото 🖼️):</label>
-                    <div id="editor-container"></div>
-                </div>
-
-                <div class="form-group">
-                    <label for="fileUrl">Посилання на файл (Google Drive / PDF / Презентація):</label>
-                    <input type="url" id="fileUrl" class="form-control" placeholder="https://drive.google.com/..." />
-                </div>
-
-                <div style="display:flex; gap:12px; align-items:center;">
-                    <button type="submit" id="btnPublish" class="btn-btn">🚀 Опублікувати матеріал</button>
-                    <button type="button" id="btnCancelEdit" class="btn-btn btn-secondary" style="display:none;" onclick="resetFormToNew()">Скасувати редагування</button>
-                </div>
-                <div id="msgLesson" class="status-msg"></div>
-            </form>
+        <div class="token-box">
+            <span>🔑 API Token:</span>
+            <input type="password" id="global-token" placeholder="sk..." onchange="saveTokenLocally(this.value)">
         </div>
     </div>
 
-    <!-- Quill Editor JS -->
-    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+    <!-- ВКЛАДКИ НАВІГАЦІЇ -->
+    <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab('tab-portfolio', this)">👨‍🏫 Портфоліо</button>
+        <button class="tab-btn" onclick="switchTab('tab-subjects', this)">📚 Дисципліни</button>
+        <button class="tab-btn" onclick="switchTab('tab-types', this)">🏷️ Типи завдань</button>
+        <button class="tab-btn" onclick="switchTab('tab-lessons', this)">📝 Лекції та Матеріали</button>
+    </div>
+
+    <!-- 1. ПОРТФОЛІО ВИКЛАДАЧА -->
+    <div id="tab-portfolio" class="tab-content active">
+        <h3 style="margin-bottom: 18px; color: var(--deep-blue);">Редагування Портфоліо Викладача</h3>
+        <form onsubmit="savePortfolio(event)">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>ПІБ Викладача:</label>
+                    <input type="text" id="p-name" placeholder="Шевченко Владислав Ігорович" required>
+                </div>
+                <div class="form-group">
+                    <label>Посада / Статус:</label>
+                    <input type="text" id="p-role" placeholder="Викладач спецдисциплін">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Аватар (Emoji):</label>
+                    <input type="text" id="p-avatar" value="👨‍🏫">
+                </div>
+                <div class="form-group">
+                    <label>📬 Контакти:</label>
+                    <input type="text" id="p-contacts" placeholder="Email або Telegram">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>🎓 Освіта:</label>
+                <textarea id="p-education" placeholder="Вкажіть навчальні заклади, спеціальність..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>🔬 Наукові інтереси:</label>
+                <textarea id="p-interests" placeholder="Основні напрямки досліджень..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>📚 Ключові дисципліни (через кому):</label>
+                <input type="text" id="p-disciplines" placeholder="Веб-програмування, Бази даних, ООП">
+                <div class="hint">Введіть назви через кому для створення тегів у модальному вікні.</div>
+            </div>
+
+            <button type="submit" class="btn-action">💾 Зберегти портфоліо</button>
+        </form>
+    </div>
+
+    <!-- 2. ДИСЦИПЛІНИ -->
+    <div id="tab-subjects" class="tab-content">
+        <h3 style="margin-bottom: 18px; color: var(--deep-blue);">Управління Дисциплінами</h3>
+        <form onsubmit="addSubject(event)">
+            <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Назва дисципліни:</label>
+                    <input type="text" id="s-title" placeholder="Веб-програмування" required>
+                </div>
+                <div class="form-group">
+                    <label>Іконка (Emoji):</label>
+                    <input type="text" id="s-icon" placeholder="💻" value="💻">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Короткий опис:</label>
+                <textarea id="s-desc" placeholder="Опис курсів, для яких груп..."></textarea>
+            </div>
+            <button type="submit" class="btn-action">➕ Додати дисципліну</button>
+        </form>
+
+        <div class="items-list">
+            <h4 style="margin-bottom: 14px; color: var(--deep-blue);">Існуючі дисципліни:</h4>
+            <div id="subjects-admin-list">Завантаження...</div>
+        </div>
+    </div>
+
+    <!-- 3. ТИПИ ЗАВДАНЬ -->
+    <div id="tab-types" class="tab-content">
+        <h3 style="margin-bottom: 18px; color: var(--deep-blue);">Управління Типами Матеріалів</h3>
+        <form onsubmit="addTaskType(event)">
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Назва типу (напр. Лекція, Лабораторна):</label>
+                    <input type="text" id="t-title" placeholder="Практична робота" required>
+                </div>
+                <div class="form-group">
+                    <label>Колір плашки (Hex/CSS):</label>
+                    <input type="text" id="t-color" placeholder="#e0f2fe" value="#e0f2fe">
+                </div>
+            </div>
+            <button type="submit" class="btn-action">➕ Додати тип</button>
+        </form>
+
+        <div class="items-list">
+            <h4 style="margin-bottom: 14px; color: var(--deep-blue);">Існуючі типи:</h4>
+            <div id="types-admin-list">Завантаження...</div>
+        </div>
+    </div>
+
+    <!-- 4. ЛЕКЦІЇ -->
+    <div id="tab-lessons" class="tab-content">
+        <h3 style="margin-bottom: 18px; color: var(--deep-blue);">Додавання Нової Лекції / Завдання</h3>
+        <form onsubmit="addLesson(event)">
+            <div class="form-group">
+                <label>Тема / Назва матеріалу:</label>
+                <input type="text" id="l-title" placeholder="Лекція 1. Вступ до HTML5" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Дисципліна:</label>
+                    <select id="l-discipline" required>
+                        <option value="">Оберіть дисципліну...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Тип матеріалу:</label>
+                    <select id="l-type" required>
+                        <option value="">Оберіть тип...</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Зміст матеріалу / Конспект (HTML або текст):</label>
+                <textarea id="l-content" style="min-height: 120px;" placeholder="Введіть текст лекції..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Посилання на файл (Google Drive / PDF / Doc):</label>
+                <input type="text" id="l-file" placeholder="https://drive.google.com/file/d/...">
+            </div>
+
+            <button type="submit" class="btn-action">🚀 Опублікувати матеріал</button>
+        </form>
+
+        <div class="items-list">
+            <h4 style="margin-bottom: 14px; color: var(--deep-blue);">Опубліковані матеріали:</h4>
+            <div id="lessons-admin-list">Завантаження...</div>
+        </div>
+    </div>
+
+    <div id="status" class="status-msg"></div>
 
     <script>
         const SANITY_PROJECT_ID = "uld9o5j2";
         const SANITY_DATASET = "production";
 
-        let allLessons = [];
-        let editingLessonId = null;
-        let portfolioDocId = null;
+        let subjects = [];
+        let taskTypes = [];
+        let lessons = [];
 
-        // Ініціалізація Quill.js (з фото, списками, заголовками)
-        const quill = new Quill('#editor-container', {
-            theme: 'snow',
-            placeholder: 'Введіть навчальний матеріал або вставте зображення (натиснувши 🖼️)...',
-            modules: {
-                toolbar: [
-                    [{ 'header': [1, 2, 3, false] }],
-                    ['bold', 'italic', 'underline', 'strike'],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    ['image', 'link'],
-                    ['clean']
-                ]
-            }
-        });
-
-        // При завантаженні сторінки
         document.addEventListener('DOMContentLoaded', () => {
-            loadSavedToken();
-            initAllAdminData();
+            const savedToken = localStorage.getItem('sanity_token');
+            if (savedToken) document.getElementById('global-token').value = savedToken;
+            loadAllData();
         });
+
+        function saveTokenLocally(val) {
+            localStorage.setItem('sanity_token', val.trim());
+        }
 
         function getToken() {
-            return document.getElementById('sanityToken').value.trim();
+            const token = document.getElementById('global-token').value.trim();
+            if (!token) {
+                showStatus('⚠️ Вкажіть API Token у верхньому правому кутку!', 'error');
+                return null;
+            }
+            return token;
         }
 
-        function saveToken() {
-            localStorage.setItem('sanity_write_token', getToken());
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
         }
 
-        function loadSavedToken() {
-            const saved = localStorage.getItem('sanity_write_token');
-            if (saved) document.getElementById('sanityToken').value = saved;
-        }
-
-        async function initAllAdminData() {
+        async function loadAllData() {
             try {
-                // 1. Завантаження портфоліо
+                // 1. Портфоліо
                 const pRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "portfolio"][0]')}`);
                 const pData = await pRes.json();
                 if (pData.result) {
                     const p = pData.result;
-                    portfolioDocId = p._id;
-                    if(p.name) document.getElementById('portName').value = p.name;
-                    if(p.role) document.getElementById('portRole').value = p.role;
-                    if(p.avatar) document.getElementById('portAvatar').value = p.avatar;
-                    if(p.color) document.getElementById('portColor').value = p.color;
-                    if(p.contacts) document.getElementById('portContacts').value = p.contacts;
-                    if(p.bio) document.getElementById('portBio').value = p.bio;
+                    if(p.name) document.getElementById('p-name').value = p.name;
+                    if(p.role) document.getElementById('p-role').value = p.role;
+                    if(p.avatar) document.getElementById('p-avatar').value = p.avatar;
+                    if(p.contacts) document.getElementById('p-contacts').value = p.contacts;
+                    if(p.education) document.getElementById('p-education').value = p.education;
+                    if(p.interests) document.getElementById('p-interests').value = p.interests;
+                    if(p.disciplines) {
+                        document.getElementById('p-disciplines').value = Array.isArray(p.disciplines) ? p.disciplines.join(', ') : p.disciplines;
+                    }
                 }
 
                 // 2. Дисципліни
-                const subRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "subject"]')}`);
-                const subData = await subRes.json();
-                const subSelect = document.getElementById('subjectSelect');
-                subSelect.innerHTML = '<option value="">Оберіть дисципліну...</option>';
-                (subData.result || []).forEach(sub => {
-                    subSelect.innerHTML += `<option value="${sub.title}">${sub.icon || ''} ${sub.title}</option>`;
-                });
+                const sRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "subject"]')}`);
+                const sData = await sRes.json();
+                subjects = sData.result || [];
+                renderSubjectsAdmin();
 
-                // 3. Типи завдань
-                const ttRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "taskType"]')}`);
-                const ttData = await ttRes.json();
-                const ttSelect = document.getElementById('taskTypeSelect');
-                ttSelect.innerHTML = '<option value="">Оберіть тип завдання...</option>';
-                (ttData.result || []).forEach(tt => {
-                    ttSelect.innerHTML += `<option value="${tt.title}">${tt.title}</option>`;
-                });
+                // 3. Типи
+                const tRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "taskType"]')}`);
+                const tData = await tRes.json();
+                taskTypes = tData.result || [];
+                renderTaskTypesAdmin();
 
-                // 4. Завантаження списку лекцій для редагування
-                await loadLessonsList();
+                // 4. Лекції
+                const lRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "lesson"]')}`);
+                const lData = await lRes.json();
+                lessons = lData.result || [];
+                renderLessonsAdmin();
 
+                updateDropdowns();
             } catch (err) {
-                console.error("Помилка завантаження даних Sanity:", err);
+                console.error("Помилка завантаження даних:", err);
             }
         }
 
-        async function loadLessonsList() {
-            const lesRes = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "lesson"]')}`);
-            const lesData = await lesRes.json();
-            allLessons = lesData.result || [];
-
-            const editSelect = document.getElementById('editLessonSelect');
-            editSelect.innerHTML = '<option value="NEW">➕ Створити новий матеріал</option>';
-            allLessons.forEach(les => {
-                editSelect.innerHTML += `<option value="${les._id}">✏️ Редагувати: [${les.discipline || 'Без дисципліни'}] ${les.title}</option>`;
-            });
-        }
-
-        // Обробник вибору матеріалу для редагування
-        function handleSelectLessonToEdit() {
-            const selectedId = document.getElementById('editLessonSelect').value;
-
-            if (selectedId === 'NEW') {
-                resetFormToNew();
-            } else {
-                const lesson = allLessons.find(l => l._id === selectedId);
-                if (lesson) {
-                    editingLessonId = lesson._id;
-                    document.getElementById('lessonTitle').value = lesson.title || '';
-                    document.getElementById('subjectSelect').value = lesson.discipline || '';
-                    document.getElementById('taskTypeSelect').value = lesson.taskType || '';
-                    document.getElementById('fileUrl').value = lesson.fileUrl || '';
-                    
-                    // Завантажуємо текст та фото в Quill
-                    quill.root.innerHTML = lesson.content || '';
-
-                    document.getElementById('formTitleText').innerText = "✏️ 4. Редагування матеріалу";
-                    const btn = document.getElementById('btnPublish');
-                    btn.innerText = "💾 Зберегти зміни";
-                    btn.style.background = "var(--green)";
-                    document.getElementById('btnCancelEdit').style.display = "inline-flex";
-                }
-            }
-        }
-
-        function resetFormToNew() {
-            editingLessonId = null;
-            document.getElementById('editLessonSelect').value = "NEW";
-            document.getElementById('publishForm').reset();
-            quill.setContents([]);
-
-            document.getElementById('formTitleText').innerText = "📝 4. Опублікувати матеріал";
-            const btn = document.getElementById('btnPublish');
-            btn.innerText = "🚀 Опублікувати матеріал";
-            btn.style.background = "var(--bright-blue)";
-            document.getElementById('btnCancelEdit').style.display = "none";
-        }
-
-        // --- API Збереження у Sanity ---
-        async function mutateSanity(mutations) {
-            const token = getToken();
-            if (!token) {
-                alert("Будь ласка, вкажіть Sanity Write Token у верхній формі!");
-                return null;
-            }
-
-            const res = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/mutate/${SANITY_DATASET}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ mutations })
-            });
-            return await res.json();
-        }
-
-        // 1. Збереження портфоліо
+        // --- ПОРТФОЛІО ---
         async function savePortfolio(e) {
             e.preventDefault();
-            const btn = document.getElementById('btnSavePortfolio');
-            btn.disabled = true;
-            
-            const doc = {
-                name: document.getElementById('portName').value,
-                role: document.getElementById('portRole').value,
-                avatar: document.getElementById('portAvatar').value,
-                color: document.getElementById('portColor').value,
-                contacts: document.getElementById('portContacts').value,
-                bio: document.getElementById('portBio').value
+            const token = getToken();
+            if (!token) return;
+
+            const disciplinesRaw = document.getElementById('p-disciplines').value;
+            const disciplinesArray = disciplinesRaw.split(',').map(item => item.trim()).filter(item => item.length > 0);
+
+            const docData = {
+                _id: "teacherPortfolio",
+                _type: "portfolio",
+                name: document.getElementById('p-name').value,
+                role: document.getElementById('p-role').value,
+                avatar: document.getElementById('p-avatar').value,
+                contacts: document.getElementById('p-contacts').value,
+                education: document.getElementById('p-education').value,
+                interests: document.getElementById('p-interests').value,
+                disciplines: disciplinesArray
             };
 
-            let mutations = [];
-            if (portfolioDocId) {
-                mutations = [{ patch: { id: portfolioDocId, set: doc } }];
-            } else {
-                mutations = [{ create: { _type: 'portfolio', ...doc } }];
-            }
+            await mutateSanity([{ createOrReplace: docData }], token, "Портфоліо збережено!");
+        }
 
-            const res = await mutateSanity(mutations);
-            btn.disabled = false;
-            const msg = document.getElementById('msgPortfolio');
+        // --- ДИСЦИПЛІНИ ---
+        async function addSubject(e) {
+            e.preventDefault();
+            const token = getToken();
+            if (!token) return;
 
-            if (res && !res.error) {
-                msg.className = "status-msg success";
-                msg.innerText = "✅ Портфоліо успішно оновлено!";
-            } else {
-                msg.className = "status-msg error";
-                msg.innerText = `Помилка: ${res?.error?.description || 'Не вдалося зберегти'}`;
+            const docData = {
+                _type: "subject",
+                title: document.getElementById('s-title').value,
+                icon: document.getElementById('s-icon').value,
+                desc: document.getElementById('s-desc').value
+            };
+
+            await mutateSanity([{ create: docData }], token, "Дисципліну додано!");
+            document.getElementById('s-title').value = '';
+            document.getElementById('s-desc').value = '';
+            loadAllData();
+        }
+
+        function renderSubjectsAdmin() {
+            const list = document.getElementById('subjects-admin-list');
+            if(subjects.length === 0) { list.innerHTML = '<p class="hint">Немає дисциплін.</p>'; return; }
+            list.innerHTML = subjects.map(s => `
+                <div class="item-card">
+                    <div>
+                        <strong>${s.icon || '📚'} ${s.title}</strong>
+                        <p style="font-size:0.8rem; color:#64748b;">${s.desc || ''}</p>
+                    </div>
+                    <button class="btn-delete" onclick="deleteDoc('${s._id}')">Видалити</button>
+                </div>
+            `).join('');
+        }
+
+        // --- ТИПИ ЗАВДАНЬ ---
+        async function addTaskType(e) {
+            e.preventDefault();
+            const token = getToken();
+            if (!token) return;
+
+            const docData = {
+                _type: "taskType",
+                title: document.getElementById('t-title').value,
+                color: document.getElementById('t-color').value
+            };
+
+            await mutateSanity([{ create: docData }], token, "Тип матеріалу додано!");
+            document.getElementById('t-title').value = '';
+            loadAllData();
+        }
+
+        function renderTaskTypesAdmin() {
+            const list = document.getElementById('types-admin-list');
+            if(taskTypes.length === 0) { list.innerHTML = '<p class="hint">Немає типів.</p>'; return; }
+            list.innerHTML = taskTypes.map(t => `
+                <div class="item-card">
+                    <div>
+                        <span style="display:inline-block; width:12px; height:12px; background:${t.color}; border-radius:50%; margin-right:6px;"></span>
+                        <strong>${t.title}</strong>
+                    </div>
+                    <button class="btn-delete" onclick="deleteDoc('${t._id}')">Видалити</button>
+                </div>
+            `).join('');
+        }
+
+        // --- ЛЕКЦІЇ ---
+        async function addLesson(e) {
+            e.preventDefault();
+            const token = getToken();
+            if (!token) return;
+
+            const docData = {
+                _type: "lesson",
+                title: document.getElementById('l-title').value,
+                discipline: document.getElementById('l-discipline').value,
+                taskType: document.getElementById('l-type').value,
+                content: document.getElementById('l-content').value,
+                fileUrl: document.getElementById('l-file').value
+            };
+
+            await mutateSanity([{ create: docData }], token, "Матеріал опубліковано!");
+            document.getElementById('l-title').value = '';
+            document.getElementById('l-content').value = '';
+            document.getElementById('l-file').value = '';
+            loadAllData();
+        }
+
+        function renderLessonsAdmin() {
+            const list = document.getElementById('lessons-admin-list');
+            if(lessons.length === 0) { list.innerHTML = '<p class="hint">Немає матеріалів.</p>'; return; }
+            list.innerHTML = lessons.map(l => `
+                <div class="item-card">
+                    <div>
+                        <strong>${l.title}</strong>
+                        <p style="font-size:0.8rem; color:#64748b;">${l.discipline} | ${l.taskType}</p>
+                    </div>
+                    <button class="btn-delete" onclick="deleteDoc('${l._id}')">Видалити</button>
+                </div>
+            `).join('');
+        }
+
+        function updateDropdowns() {
+            const disSelect = document.getElementById('l-discipline');
+            disSelect.innerHTML = '<option value="">Оберіть дисципліну...</option>' + 
+                subjects.map(s => `<option value="${s.title}">${s.title}</option>`).join('');
+
+            const typeSelect = document.getElementById('l-type');
+            typeSelect.innerHTML = '<option value="">Оберіть тип...</option>' + 
+                taskTypes.map(t => `<option value="${t.title}">${t.title}</option>`).join('');
+        }
+
+        async function deleteDoc(id) {
+            if(!confirm("Ви дійсно бажаєте видалити цей елемент?")) return;
+            const token = getToken();
+            if(!token) return;
+
+            await mutateSanity([{ delete: { id: id } }], token, "Елемент видалено!");
+            loadAllData();
+        }
+
+        async function mutateSanity(mutations, token, successMsg) {
+            try {
+                showStatus('Збереження...', '');
+                const response = await fetch(`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/mutate/${SANITY_DATASET}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ mutations })
+                });
+
+                if (response.ok) {
+                    showStatus(`✅ ${successMsg}`, 'success');
+                } else {
+                    const err = await response.json();
+                    showStatus(`Помилка: ${err.error ? err.error.description : 'Перевірте токен'}`, 'error');
+                }
+            } catch (err) {
+                showStatus('Помилка з\'єднання з сервером', 'error');
             }
         }
 
-        // 2. Збереження дисципліни
-        async function saveSubject(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnSaveSubject');
-            btn.disabled = true;
-
-            const doc = {
-                _type: 'subject',
-                title: document.getElementById('subTitle').value,
-                icon: document.getElementById('subIcon').value,
-                desc: document.getElementById('subDesc').value
-            };
-
-            const res = await mutateSanity([{ create: doc }]);
-            btn.disabled = false;
-            const msg = document.getElementById('msgSubject');
-
-            if (res && !res.error) {
-                msg.className = "status-msg success";
-                msg.innerText = "✅ Дисципліну успішно додано!";
-                document.getElementById('subjectForm').reset();
-                initAllAdminData();
-            } else {
-                msg.className = "status-msg error";
-                msg.innerText = `Помилка: ${res?.error?.description || 'Не вдалося зберегти'}`;
-            }
-        }
-
-        // 3. Збереження типу завдання
-        async function saveTaskType(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnSaveTaskType');
-            btn.disabled = true;
-
-            const doc = {
-                _type: 'taskType',
-                title: document.getElementById('ttTitle').value,
-                color: document.getElementById('ttColor').value
-            };
-
-            const res = await mutateSanity([{ create: doc }]);
-            btn.disabled = false;
-            const msg = document.getElementById('msgTaskType');
-
-            if (res && !res.error) {
-                msg.className = "status-msg success";
-                msg.innerText = "✅ Тип завдання додано!";
-                document.getElementById('taskTypeForm').reset();
-                initAllAdminData();
-            } else {
-                msg.className = "status-msg error";
-                msg.innerText = `Помилка: ${res?.error?.description || 'Не вдалося зберегти'}`;
-            }
-        }
-
-        // 4. Публікація/Оновлення матеріалу
-        async function handlePublishLesson(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnPublish');
-            btn.disabled = true;
-
-            const contentHTML = quill.root.innerHTML;
-
-            const payload = {
-                title: document.getElementById('lessonTitle').value.trim(),
-                discipline: document.getElementById('subjectSelect').value,
-                taskType: document.getElementById('taskTypeSelect').value,
-                content: contentHTML,
-                fileUrl: document.getElementById('fileUrl').value.trim()
-            };
-
-            let mutations = [];
-            if (editingLessonId) {
-                mutations = [{ patch: { id: editingLessonId, set: payload } }];
-            } else {
-                mutations = [{ create: { _type: 'lesson', ...payload } }];
-            }
-
-            const res = await mutateSanity(mutations);
-            btn.disabled = false;
-            const msg = document.getElementById('msgLesson');
-
-            if (res && !res.error) {
-                msg.className = "status-msg success";
-                msg.innerText = editingLessonId ? "✅ Зміни успішно збережено!" : "🎉 Матеріал опубліковано!";
-                await loadLessonsList();
-                resetFormToNew();
-            } else {
-                msg.className = "status-msg error";
-                msg.innerText = `Помилка: ${res?.error?.description || 'Не вдалося зберегти'}`;
+        function showStatus(msg, type) {
+            const el = document.getElementById('status');
+            el.innerText = msg;
+            el.className = `status-msg ${type}`;
+            el.style.display = 'block';
+            if(type) {
+                setTimeout(() => { el.style.display = 'none'; }, 3500);
             }
         }
     </script>
