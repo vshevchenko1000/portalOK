@@ -15,34 +15,35 @@
         }
         .card {
             background: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
+            padding: 24px;
+            border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
         label {
             display: block;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
-        input[type="password"], input[type="text"], textarea, input[type="file"] {
+        input[type="password"], input[type="text"], textarea, input[type="file"], select {
             width: 100%;
-            padding: 10px;
+            padding: 10px 12px;
             border: 1px solid #ccc;
-            border-radius: 4px;
+            border-radius: 6px;
             box-sizing: border-box;
             font-family: inherit;
+            font-size: 14px;
         }
         button {
-            padding: 8px 14px;
+            padding: 10px 16px;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
-            transition: opacity 0.2s;
+            transition: background 0.2s;
         }
         button:hover { opacity: 0.9; }
         .btn-primary { background: #2276fc; color: white; }
@@ -52,36 +53,32 @@
 
         .materials-list {
             display: grid;
-            gap: 15px;
+            gap: 12px;
             margin-top: 15px;
         }
         .material-item {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
             background: #fafafa;
             border: 1px solid #e0e0e0;
-            padding: 15px;
-            border-radius: 6px;
+            padding: 12px 16px;
+            border-radius: 8px;
             gap: 15px;
         }
         .material-preview {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             object-fit: cover;
-            border-radius: 4px;
+            border-radius: 6px;
             background: #eee;
+            flex-shrink: 0;
         }
-        .material-info {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        .material-id { font-size: 12px; color: #777; }
+        .material-info { flex-grow: 1; }
+        .material-id { font-size: 11px; color: #888; display: block; margin-top: 2px; }
         .actions { display: flex; gap: 8px; }
 
-        /* Модальне вікно для редагування */
+        /* Модалка редагування */
         .modal {
             display: none;
             position: fixed;
@@ -89,11 +86,12 @@
             background: rgba(0,0,0,0.5);
             align-items: center;
             justify-content: center;
+            z-index: 1000;
         }
         .modal-content {
             background: white;
-            padding: 25px;
-            border-radius: 8px;
+            padding: 24px;
+            border-radius: 12px;
             width: 100%;
             max-width: 500px;
         }
@@ -101,18 +99,41 @@
 </head>
 <body>
 
-    <!-- Секція авторизації -->
+    <!-- 1. Налаштування авторизації та Sanity Schema -->
     <div class="card">
         <div class="form-group">
             <label for="sanityToken">🔑 Sanity Write Token (збережеться автоматично):</label>
             <input type="password" id="sanityToken" placeholder="sk..." autocomplete="off">
         </div>
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="docType">🏷️ Тип документа в Sanity (_type):</label>
+            <input type="text" id="docType" value="material" placeholder="material або post або article">
+            <small style="color: #666;">Змініть, якщо ваша схема в Sanity називається по-іншому (наприклад, <b>materials</b> чи <b>post</b>).</small>
+        </div>
     </div>
 
-    <!-- Секція управління матеріалами -->
+    <!-- 2. Форма створення/додавання нового матеріалу -->
+    <div class="card">
+        <h2>➕ Додати новий матеріал</h2>
+        <form id="addForm" onsubmit="createMaterial(event)">
+            <div class="form-group">
+                <label for="newTitle">Заголовок / Текст матеріалу:</label>
+                <input type="text" id="newTitle" required placeholder="Введіть назву або текст...">
+            </div>
+            
+            <div class="form-group">
+                <label for="newImage">🖼️ Прикріпити фотографію:</label>
+                <input type="file" id="newImage" accept="image/*">
+            </div>
+
+            <button type="submit" id="addBtn" class="btn-success">Опублікувати матеріал</button>
+        </form>
+    </div>
+
+    <!-- 3. Список створених матеріалів -->
     <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2>📦 Матеріали</h2>
+            <h2>📦 Наявні матеріали</h2>
             <button class="btn-primary" onclick="loadMaterials()">🔄 Оновити список</button>
         </div>
         
@@ -121,7 +142,7 @@
         </div>
     </div>
 
-    <!-- Модальне вікно редагування -->
+    <!-- Модальне вікно для редагування -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <h3>✏️ Редагувати матеріал</h3>
@@ -133,13 +154,13 @@
             </div>
 
             <div class="form-group">
-                <label for="editImage">Завантажити нове фото:</label>
+                <label for="editImage">Замінити фотографію:</label>
                 <input type="file" id="editImage" accept="image/*">
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 10px;">
                 <button class="btn-secondary" onclick="closeModal()">Скасувати</button>
-                <button class="btn-success" id="saveBtn" onclick="saveChanges()">Зберегти</button>
+                <button class="btn-success" id="saveBtn" onclick="saveChanges()">Зберегти зміни</button>
             </div>
         </div>
     </div>
@@ -150,25 +171,95 @@
         const API_VERSION = 'v2021-06-07';
 
         const tokenInput = document.getElementById('sanityToken');
+        const docTypeInput = document.getElementById('docType');
         const container = document.getElementById('materialsContainer');
         let materialsData = [];
 
-        // 1. Ініціалізація
+        // Ініціалізація
         document.addEventListener('DOMContentLoaded', () => {
             const savedToken = localStorage.getItem('sanityToken');
             if (savedToken) tokenInput.value = savedToken;
+
+            const savedDocType = localStorage.getItem('sanityDocType');
+            if (savedDocType) docTypeInput.value = savedDocType;
+
             loadMaterials();
         });
 
-        tokenInput.addEventListener('input', (e) => {
-            localStorage.setItem('sanityToken', e.target.value.trim());
+        tokenInput.addEventListener('input', (e) => localStorage.setItem('sanityToken', e.target.value.trim()));
+        docTypeInput.addEventListener('input', (e) => {
+            localStorage.setItem('sanityDocType', e.target.value.trim());
+            loadMaterials();
         });
 
-        function getToken() {
-            return localStorage.getItem('sanityToken') || tokenInput.value.trim();
+        function getToken() { return localStorage.getItem('sanityToken') || tokenInput.value.trim(); }
+        function getDocType() { return docTypeInput.value.trim() || 'material'; }
+
+        // Допоміжна функція завантаження зображення в Sanity Assets
+        async function uploadImageAsset(file, token) {
+            const url = `https://${PROJECT_ID}.api.sanity.io/${API_VERSION}/assets/images/${DATASET}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': file.type, 'Authorization': `Bearer ${token}` },
+                body: file
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error?.description || 'Помилка завантаження фото');
+            return data.document._id;
         }
 
-        // 2. Завантаження списку з зображеннями
+        // 1. Створення нового матеріалу
+        async function createMaterial(e) {
+            e.preventDefault();
+            const token = getToken();
+            if (!token) return alert('⚠️ Помилка: Введіть Sanity Write Token!');
+
+            const title = document.getElementById('newTitle').value;
+            const fileInput = document.getElementById('newImage');
+            const addBtn = document.getElementById('addBtn');
+
+            addBtn.disabled = true;
+            addBtn.innerText = 'Публікація...';
+
+            try {
+                let doc = {
+                    _type: getDocType(),
+                    title: title
+                };
+
+                // Якщо прикріплено фото
+                if (fileInput.files.length > 0) {
+                    const assetId = await uploadImageAsset(fileInput.files[0], token);
+                    doc.image = {
+                        _type: 'image',
+                        asset: { _type: 'reference', _ref: assetId }
+                    };
+                }
+
+                // Запит на створення документа
+                const res = await fetch(`https://${PROJECT_ID}.api.sanity.io/${API_VERSION}/data/mutate/${DATASET}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ mutations: [{ create: doc }] })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    alert('✅ Матеріал успішно створено!');
+                    document.getElementById('addForm').reset();
+                    loadMaterials();
+                } else {
+                    alert(`Помилка: ${data.error?.description || 'Не вдалося створити'}`);
+                }
+            } catch (err) {
+                alert(`Помилка: ${err.message}`);
+            } finally {
+                addBtn.disabled = false;
+                addBtn.innerText = 'Опублікувати матеріал';
+            }
+        }
+
+        // 2. Отримання списку матеріалів
         async function loadMaterials() {
             const token = getToken();
             if (!token) {
@@ -177,18 +268,17 @@
             }
 
             container.innerHTML = '<p style="color: #666;">Завантажуємо матеріали...</p>';
+            const currentType = getDocType();
 
-            // GROQ запит із розгортанням посилання на зображення (asset->url)
-            const query = encodeURIComponent('*[_type == "material"]{ _id, title, name, "imageUrl": image.asset->url }');
+            // GROQ запит
+            const query = encodeURIComponent(`*[_type == "${currentType}"]{ _id, title, name, "imageUrl": image.asset->url }`);
             const url = `https://${PROJECT_ID}.api.sanity.io/${API_VERSION}/data/query/${DATASET}?query=${query}`;
 
             try {
-                const response = await fetch(url, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const response = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await response.json();
 
-                if (!response.ok) throw new Error(data.error?.description || 'Помилка доступу до API');
+                if (!response.ok) throw new Error(data.error?.description || 'Помилка API');
 
                 materialsData = data.result || [];
                 renderMaterials(materialsData);
@@ -197,17 +287,17 @@
             }
         }
 
-        // 3. Відображення матеріалів
+        // 3. Відображення карток
         function renderMaterials(items) {
             if (items.length === 0) {
-                container.innerHTML = '<p style="color: #777;">Матеріалів не знайдено.</p>';
+                container.innerHTML = `<p style="color: #777;">Матеріалів з типом "<b>${getDocType()}</b>" не знайдено.</p>`;
                 return;
             }
 
             container.innerHTML = items.map(item => `
                 <div class="material-item" id="doc-${item._id}">
                     ${item.imageUrl 
-                        ? `<img src="${item.imageUrl}" class="material-preview" alt="Прев'ю">` 
+                        ? `<img src="${item.imageUrl}" class="material-preview" alt="Фото">` 
                         : `<div class="material-preview" style="display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa;">Без фото</div>`}
                     
                     <div class="material-info">
@@ -223,48 +313,25 @@
             `).join('');
         }
 
-        // 4. Завантаження зображення в Sanity Assets API
-        async function uploadImageAsset(file, token) {
-            const url = `https://${PROJECT_ID}.api.sanity.io/${API_VERSION}/assets/images/${DATASET}`;
-            
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': file.type,
-                    'Authorization': `Bearer ${token}`
-                },
-                body: file
-            });
-
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error?.description || 'Помилка завантаження фото');
-            return data.document._id; // Повертає ID створеного asset-документа
-        }
-
-        // 5. Відкриття та закриття модалки
+        // 4. Редагування
         function openEditModal(id) {
             const item = materialsData.find(m => m._id === id);
             if (!item) return;
 
             document.getElementById('editDocId').value = id;
             document.getElementById('editTitle').value = item.title || item.name || '';
-            document.getElementById('editImage').value = ''; // Скидаємо вибраний файл
+            document.getElementById('editImage').value = '';
             document.getElementById('editModal').style.display = 'flex';
         }
 
-        function closeModal() {
-            document.getElementById('editModal').style.display = 'none';
-        }
+        function closeModal() { document.getElementById('editModal').style.display = 'none'; }
 
-        // 6. Збереження змін (Текст + Фото)
         async function saveChanges() {
             const token = getToken();
             const docId = document.getElementById('editDocId').value;
             const newTitle = document.getElementById('editTitle').value;
-            const imageFileInput = document.getElementById('editImage');
+            const fileInput = document.getElementById('editImage');
             const saveBtn = document.getElementById('saveBtn');
-
-            if (!token) return alert('Токен відсутній!');
 
             saveBtn.disabled = true;
             saveBtn.innerText = 'Збереження...';
@@ -272,86 +339,55 @@
             try {
                 const patchSet = { title: newTitle };
 
-                // Якщо обрано новий файл — завантажуємо його
-                if (imageFileInput.files.length > 0) {
-                    const file = imageFileInput.files[0];
-                    const assetId = await uploadImageAsset(file, token);
-                    
-                    // Додаємо посилання на фото в patch
-                    patchSet.image = {
-                        _type: 'image',
-                        asset: {
-                            _type: 'reference',
-                            _ref: assetId
-                        }
-                    };
+                if (fileInput.files.length > 0) {
+                    const assetId = await uploadImageAsset(fileInput.files[0], token);
+                    patchSet.image = { _type: 'image', asset: { _type: 'reference', _ref: assetId } };
                 }
 
-                // Відправляємо PATCH запит на оновлення документа
-                const mutateUrl = `https://${PROJECT_ID}.api.sanity.io/${API_VERSION}/data/mutate/${DATASET}`;
-                const response = await fetch(mutateUrl, {
+                const res = await fetch(`https://${PROJECT_ID}.api.sanity.io/${API_VERSION}/data/mutate/${DATASET}`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        mutations: [
-                            { patch: { id: docId, set: patchSet } }
-                        ]
-                    })
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ mutations: [{ patch: { id: docId, set: patchSet } }] })
                 });
 
-                const data = await response.json();
-
-                if (response.ok) {
-                    alert('Матеріал успішно оновлено!');
+                if (res.ok) {
+                    alert('✅ Зміни збережено!');
                     closeModal();
-                    loadMaterials(); // Оновлюємо список
+                    loadMaterials();
                 } else {
+                    const data = await res.json();
                     alert(`Помилка: ${data.error?.description || 'Не вдалося оновити'}`);
                 }
             } catch (err) {
-                console.error(err);
                 alert(`Помилка: ${err.message}`);
             } finally {
                 saveBtn.disabled = false;
-                saveBtn.innerText = 'Зберегти';
+                saveBtn.innerText = 'Зберегти зміни';
             }
         }
 
-        // 7. Видалення матеріалу
+        // 5. Видалення
         async function deleteMaterial(documentId) {
             const token = getToken();
-            if (!token) return alert('Помилка: Токен відсутній!');
             if (!confirm('Ви впевнені, що хочете видалити цей матеріал?')) return;
 
-            const url = `https://${PROJECT_ID}.api.sanity.io/${API_VERSION}/data/mutate/${DATASET}`;
-
             try {
-                const response = await fetch(url, {
+                const res = await fetch(`https://${PROJECT_ID}.api.sanity.io/${API_VERSION}/data/mutate/${DATASET}`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        mutations: [{ delete: { id: documentId } }]
-                    })
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ mutations: [{ delete: { id: documentId } }] })
                 });
 
-                if (response.ok) {
-                    const element = document.getElementById(`doc-${documentId}`);
-                    if (element) element.remove();
+                if (res.ok) {
+                    const el = document.getElementById(`doc-${documentId}`);
+                    if (el) el.remove();
                 } else {
-                    const data = await response.json();
-                    alert(`Помилка видалення: ${data.error?.description || 'Перевірте права токена'}`);
+                    alert('Помилка при видаленні.');
                 }
             } catch (err) {
                 alert('Не вдалося виконати запит.');
             }
         }
     </script>
-
 </body>
 </html>
