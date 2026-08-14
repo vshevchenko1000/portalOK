@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Адмін-панель ДФКР</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f4f8; color: #001b4c; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: 30px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 6px solid #001b4c; }
+    h2 { color: #001b4c; margin-top: 0; }
+    label { font-weight: bold; display: block; margin-top: 15px; margin-bottom: 5px; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+    button { background: #00a3ff; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 20px; width: 100%; font-size: 16px; }
+    button:hover { background: #0082cc; }
+    .status { margin-top: 15px; padding: 10px; border-radius: 6px; display: none; text-align: center; font-weight: bold; }
+    .success { background: #d4edda; color: #155724; }
+    .error { background: #f8d7da; color: #721c24; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>✏️ Додати нову лекцію (ДФКР)</h2>
+  
+  <label>Sanity API Token (введіть 1 раз):</label>
+  <input type="password" id="token" placeholder="sk..." />
+
+  <label>Sanity Project ID:</label>
+  <input type="text" id="projectId" placeholder="Введіть ваш Project ID" />
+
+  <hr style="margin-top:20px; border:0; border-top:1px solid #eee;">
+
+  <label>Дисципліна:</label>
+  <select id="discipline">
+    <option value="Electrical Engineering">Електротехніка</option>
+    <option value="CAD/CAM">CAD / CAM системи</option>
+    <option value="Computer Science">Комп'ютерні науки</option>
+  </select>
+
+  <label>Назва лекції / теми:</label>
+  <input type="text" id="title" placeholder="Наприклад: Лекція 1. Основи кінематики" />
+
+  <label>Короткий зміст / Опис:</label>
+  <textarea id="content" rows="4" placeholder="Текст лекції або теоретичні відомості..."></textarea>
+
+  <label>Посилання на матеріали (Google Drive / PDF / Файл):</label>
+  <input type="url" id="fileUrl" placeholder="https://..." />
+
+  <button onclick="publishLesson()">🚀 Опублікувати на порталі</button>
+
+  <div id="status" class="status"></div>
+</div>
+
+<script>
+  // Автозбереження ключа в браузері
+  document.getElementById('token').value = localStorage.getItem('sanity_token') || '';
+  document.getElementById('projectId').value = localStorage.getItem('sanity_project_id') || '';
+
+  async function publishLesson() {
+    const token = document.getElementById('token').value.trim();
+    const projectId = document.getElementById('projectId').value.trim();
+    const discipline = document.getElementById('discipline').value;
+    const title = document.getElementById('title').value.trim();
+    const content = document.getElementById('content').value.trim();
+    const fileUrl = document.getElementById('fileUrl').value.trim();
+    const statusDiv = document.getElementById('status');
+
+    if (!token || !projectId || !title) {
+      alert('Будь ласка, заповніть Token, Project ID та Назву лекції!');
+      return;
+    }
+
+    localStorage.setItem('sanity_token', token);
+    localStorage.setItem('sanity_project_id', projectId);
+
+    statusDiv.style.display = 'block';
+    statusDiv.className = 'status';
+    statusDiv.innerText = 'Опублікування...';
+
+    const mutation = {
+      mutations: [{
+        create: {
+          _type: 'lesson',
+          discipline: discipline,
+          title: title,
+          content: content,
+          fileUrl: fileUrl,
+          createdAt: new Date().toISOString()
+        }
+      }]
+    };
+
+    try {
+      const response = await fetch(`https://${projectId}.api.sanity.io/v2021-06-07/data/mutate/production`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(mutation)
+      });
+
+      if (response.ok) {
+        statusDiv.className = 'status success';
+        statusDiv.innerText = '✅ Лекцію успішно опубліковано!';
+        document.getElementById('title').value = '';
+        document.getElementById('content').value = '';
+        document.getElementById('fileUrl').value = '';
+      } else {
+        const err = await response.json();
+        throw new Error(err.message || 'Помилка доступу');
+      }
+    } catch (err) {
+      statusDiv.className = 'status error';
+      statusDiv.innerText = '❌ Помилка: ' + err.message;
+    }
+  }
+</script>
+
+</body>
+</html>
