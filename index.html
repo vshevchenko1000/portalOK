@@ -1,65 +1,647 @@
-<script>
-    const MAIN_SANITY_PROJECT_ID = "uld9o5j2";
-    const MAIN_SANITY_DATASET = "production";
+<!DOCTYPE html>
+<html lang="uk">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Навчально-методичне забезпечення дисциплін</title>
 
-    async function loadFrontendPortfolio() {
-        try {
-            // Отримуємо портфоліо, де заповнене ім'я
-            const query = encodeURIComponent('*[_type == "portfolio" && defined(name)][0]');
-            const url = `https://${MAIN_SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${MAIN_SANITY_DATASET}?query=${query}`;
-            
-            const res = await fetch(url);
-            const data = await res.json();
-            const p = data.result;
+		<style>
+			:root {
+				--deep-blue: #001b4c;
+				--bright-blue: #00a3ff;
+				--bg-color: #f8fafc;
+				--card-bg: #ffffff;
+				--text-main: #0f172a;
+				--text-muted: #64748b;
+				--border-color: #e2e8f0;
+				--shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+				--shadow-hover: 0 12px 24px -4px rgba(0, 163, 255, 0.18);
+			}
 
-            if (!p) return;
+			* { box-sizing: border-box; margin: 0; padding: 0; }
 
-            // 1. Оновлюємо базові текстові поля (якщо вони є на сторінці)
-            const nameEl = document.getElementById('modal-p-name') || document.querySelector('.teacher-name');
-            const roleEl = document.getElementById('modal-p-role') || document.querySelector('.teacher-role');
-            const contactEl = document.getElementById('modal-p-contacts') || document.querySelector('.teacher-contacts');
-            
-            if (nameEl) nameEl.textContent = p.name || 'Викладач';
-            if (roleEl) roleEl.textContent = p.role || '';
-            if (contactEl) contactEl.textContent = p.contacts || '';
+			body {
+				font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+				background-color: var(--bg-color);
+				color: var(--text-main);
+				min-height: 100vh;
+				display: flex;
+				flex-direction: column;
+			}
 
-            // 2. Формуємо блок для заміни "Завантаження інформації..."
-            let contentHtml = '';
+			header {
+				background: var(--deep-blue);
+				color: white;
+				padding: 16px 40px;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				border-bottom: 3px solid var(--bright-blue);
+				box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+				position: sticky;
+				top: 0;
+				z-index: 100;
+			}
 
-            if (p.education) {
-                const edFormatted = p.education.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                contentHtml += `<div style="margin-bottom: 12px;"><strong>🎓 Освіта:</strong><br>${edFormatted}</div>`;
-            }
+			.brand-container { cursor: pointer; display: flex; flex-direction: column; }
+			.logo-title { font-size: 1.25rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
+			.logo-subtitle { font-size: 0.8rem; color: var(--bright-blue); text-transform: uppercase; font-weight: 600; }
 
-            if (p.interests) {
-                const intFormatted = p.interests.replace(/\n/g, '<br>');
-                contentHtml += `<div style="margin-bottom: 12px;"><strong>🔬 Наукові інтереси:</strong><br>${intFormatted}</div>`;
-            }
+			.nav-breadcrumbs { color: #94a3b8; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+			.nav-breadcrumbs a { color: var(--bright-blue); text-decoration: none; font-weight: 600; cursor: pointer; }
 
-            if (p.disciplines) {
-                const discList = Array.isArray(p.disciplines) 
-                    ? p.disciplines 
-                    : String(p.disciplines).split(',').map(d => d.trim());
+			main { flex: 1; max-width: 1200px; width: 100%; margin: 0 auto; padding: 30px 20px; }
+			.page-view { display: none; }
+			.page-view.active { display: block; animation: fadeIn 0.25s ease; }
 
-                if (discList.length > 0 && discList[0] !== '') {
-                    const tags = discList.map(d => `<span style="display:inline-block; background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px; margin:2px; font-size:0.85em;">${d}</span>`).join(' ');
-                    contentHtml += `<div style="margin-bottom: 12px;"><strong>📚 Ключові дисципліни:</strong><br>${tags}</div>`;
-                }
-            }
+			@keyframes fadeIn {
+				from { opacity: 0; transform: translateY(6px); }
+				to { opacity: 1; transform: translateY(0); }
+			}
 
-            // 3. Знаходимо контейнер із текстом "Завантаження інформації..." і замінюємо його
-            const infoContainers = document.querySelectorAll('*');
-            infoContainers.forEach(el => {
-                if (el.children.length === 0 && el.textContent.includes('Завантаження інформації...')) {
-                    el.innerHTML = contentHtml || 'Інформація відсутня.';
-                }
-            });
+			.hero {
+				background: linear-gradient(135deg, #001b4c 0%, #003380 100%);
+				color: white; border-radius: 16px; padding: 30px; margin-bottom: 32px;
+				display: flex; justify-content: space-between; align-items: center; gap: 20px;
+			}
+			.hero-text h1 { font-size: 1.8rem; margin-bottom: 8px; }
+			.hero-text p { color: #cbd5e1; font-size: 0.95rem; max-width: 600px; }
 
-        } catch (err) {
-            console.error("Помилка завантаження даних на фронтенді:", err);
-        }
-    }
+			.teacher-badge {
+				display: flex; align-items: center; gap: 12px;
+				background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(8px);
+				padding: 12px 18px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.25);
+				cursor: pointer; transition: all 0.25s ease; user-select: none;
+			}
+			.teacher-badge:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+			.teacher-avatar { width: 46px; height: 46px; border-radius: 50%; background: var(--bright-blue); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 2px solid white; }
 
-    // Автоматичний запуск при завантаженні сторінки
-    document.addEventListener('DOMContentLoaded', loadFrontendPortfolio);
-</script>
+			.section-title { font-size: 1.3rem; color: var(--deep-blue); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+			.section-title::before { content: ''; display: inline-block; width: 5px; height: 20px; background: var(--bright-blue); border-radius: 3px; }
+
+			.components-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+			.component-card {
+				background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 14px;
+				padding: 22px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between;
+				transition: all 0.25s ease; position: relative; box-shadow: var(--shadow);
+			}
+			.component-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--deep-blue); border-radius: 14px 14px 0 0; }
+			.component-card:hover { border-color: var(--bright-blue); transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+
+			.card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+			.icon-box { width: 44px; height: 44px; border-radius: 10px; background: rgba(0, 163, 255, 0.1); color: var(--bright-blue); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: bold; }
+			.card-title { font-size: 1.1rem; font-weight: 700; color: var(--deep-blue); }
+			.card-description { color: var(--text-muted); font-size: 0.88rem; line-height: 1.4; margin-bottom: 12px; }
+			
+			/* СТИЛІ КНОПОК ДОКУМЕНТІВ (СИЛАБУСІВ / ПРОГРАМ) */
+			.subject-docs-container {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+				margin-top: 10px;
+				margin-bottom: 14px;
+			}
+			.doc-btn {
+				display: inline-flex;
+				align-items: center;
+				gap: 5px;
+				padding: 5px 10px;
+				background: #f1f5f9;
+				color: var(--deep-blue);
+				border: 1px solid var(--border-color);
+				border-radius: 6px;
+				font-size: 0.78rem;
+				font-weight: 700;
+				text-decoration: none;
+				transition: all 0.2s ease;
+			}
+			.doc-btn:hover {
+				background: var(--bright-blue);
+				color: white;
+				border-color: var(--bright-blue);
+			}
+
+			.card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border-color); font-size: 0.85rem; font-weight: 600; color: var(--bright-blue); }
+
+			.btn-back { background: #e2e8f0; border: none; padding: 8px 16px; border-radius: 8px; color: var(--text-main); font-weight: 600; cursor: pointer; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 6px; transition: background 0.2s; }
+			.btn-back:hover { background: #cbd5e1; }
+
+			.subject-header-box { background: white; border: 2px solid var(--border-color); border-radius: 14px; padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow); }
+
+			.filters-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+			.filter-btn {
+				background: white; border: 2px solid var(--border-color); padding: 8px 16px;
+				border-radius: 20px; font-weight: 600; font-size: 0.88rem; cursor: pointer;
+				transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; gap: 8px;
+			}
+			.filter-btn:hover { border-color: var(--bright-blue); transform: translateY(-2px); }
+			.filter-btn.active { background: var(--deep-blue); color: white; border-color: var(--deep-blue); box-shadow: 0 4px 12px rgba(0,27,76,0.2); }
+			.filter-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+			.module-block { background: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+			.lessons-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+			.lesson-item {
+				display: flex; align-items: center; justify-content: space-between; padding: 14px 18px;
+				background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px;
+				cursor: pointer; transition: all 0.25s ease; animation: slideUp 0.3s ease;
+			}
+			.lesson-item:hover { background: white; border-color: var(--bright-blue); transform: translateX(6px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+			@keyframes slideUp {
+				from { opacity: 0; transform: translateY(10px); }
+				to { opacity: 1; transform: translateY(0); }
+			}
+
+			.task-badge {
+				font-size: 0.78rem; padding: 5px 12px; border-radius: 12px; font-weight: 700;
+				color: #0f172a; transition: all 0.2s; border: 1px solid rgba(0,0,0,0.08);
+			}
+
+			/* ВІДОБРАЖЕННЯ ЗОБРАЖЕНЬ У ЛЕКЦІЯХ */
+			.lecture-content-box { background: white; border-radius: 14px; padding: 32px; border: 1px solid var(--border-color); box-shadow: var(--shadow); line-height: 1.7; font-size: 1rem; color: #334155; }
+			.lecture-content-box img {
+				max-width: 100%;
+				height: auto;
+				border-radius: 10px;
+				margin: 16px 0;
+				display: block;
+				box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+			}
+
+			.download-card { background: #f1f5f9; border: 1px dashed var(--bright-blue); border-radius: 8px; padding: 16px; margin-top: 24px; display: flex; align-items: center; justify-content: space-between; }
+
+			/* МОДАЛЬНЕ ВІКНО */
+			@keyframes overlayFadeIn {
+				from { opacity: 0; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px); }
+				to { opacity: 1; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+			}
+
+			@keyframes modalSpringPop {
+				0% { opacity: 0; transform: scale(0.82) translateY(30px); }
+				70% { transform: scale(1.02) translateY(-3px); }
+				100% { opacity: 1; transform: scale(1) translateY(0); }
+			}
+
+			.modal-overlay {
+				position: fixed;
+				top: 0; left: 0; right: 0; bottom: 0;
+				background: rgba(0, 27, 76, 0.55);
+				backdrop-filter: blur(8px);
+				-webkit-backdrop-filter: blur(8px);
+				display: none;
+				align-items: center;
+				justify-content: center;
+				z-index: 1000;
+				padding: 20px;
+				transition: opacity 0.3s ease;
+			}
+
+			.modal-overlay[style*="display: flex"] {
+				animation: overlayFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+			}
+
+			.modal-card {
+				background: #ffffff;
+				border-radius: 20px;
+				max-width: 540px;
+				width: 100%;
+				padding: 32px;
+				position: relative;
+				box-shadow: 0 25px 50px -12px rgba(0, 27, 76, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.4);
+				animation: modalSpringPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+				box-sizing: border-box;
+				overflow: hidden;
+			}
+
+			.close-modal-btn {
+				position: absolute;
+				top: 18px;
+				right: 18px;
+				background: #f1f5f9;
+				color: #475569;
+				border: none;
+				width: 36px;
+				height: 36px;
+				border-radius: 50%;
+				font-size: 1.1rem;
+				cursor: pointer;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+			}
+
+			.close-modal-btn:hover {
+				background: #fee2e2;
+				color: #ef4444;
+				transform: rotate(90deg) scale(1.1);
+			}
+
+			#modal-avatar {
+				width: 68px;
+				height: 68px;
+				font-size: 2.2rem;
+				border-radius: 50%;
+				background: var(--bright-blue, #00a3ff);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				border: 3px solid #ffffff;
+				box-shadow: 0 8px 16px rgba(0, 163, 255, 0.25);
+				transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+			}
+
+			#modal-avatar:hover {
+				transform: scale(1.1) rotate(6deg);
+			}
+
+			#modal-bio {
+				font-size: 0.95rem;
+				color: var(--text-muted, #64748b);
+				line-height: 1.65;
+				margin-bottom: 20px;
+				word-break: break-word;
+				overflow-wrap: anywhere;
+				white-space: pre-line;
+			}
+
+			#modal-contacts-box {
+				font-size: 0.9rem;
+				background: #f8fafc;
+				padding: 16px;
+				border-radius: 12px;
+				border: 1.5px solid var(--border-color, #e2e8f0);
+				transition: all 0.25s ease;
+				word-break: break-word;
+				overflow-wrap: anywhere;
+			}
+
+			#modal-contacts-box:hover {
+				background: #ffffff;
+				border-color: var(--bright-blue, #00a3ff);
+				transform: translateY(-2px);
+				box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+			}
+		</style>
+	</head>
+	<body>
+
+		<header>
+			<div class="brand-container" onclick="navToMain()">
+				<div class="logo-title">НАВЧАЛЬНО-МЕТОДИЧНЕ ЗАБЕЗПЕЧЕННЯ ДИСЦИПЛІН</div>
+				<div class="logo-subtitle">ДНІПРОВСЬКИЙ ФАХОВИЙ КОЛЕДЖ РАДІОЕЛЕКТРОНІКИ</div>
+			</div>
+			<div class="nav-breadcrumbs" id="breadcrumbs">
+				<span>Головна</span>
+			</div>
+		</header>
+
+		<main>
+			<!-- 1. ГОЛОВНА СТОРІНКА -->
+			<div id="view-main" class="page-view active">
+				<section class="hero">
+					<div class="hero-text">
+						<h1>Вітаємо на навчальному порталі!</h1>
+						<p>Оберіть потрібну дисципліну для переходу до електронних підручників, лекцій та лабораторних матеріалів.</p>
+					</div>
+					<div class="teacher-badge" id="hero-portfolio-btn" onclick="openPortfolioModal()">
+						<div class="teacher-avatar" id="hero-avatar">👨‍🏫</div>
+						<div>
+							<div style="font-size: 0.9rem; font-weight:700;" id="hero-name">Портфоліо</div>
+							<div style="font-size: 0.78rem; opacity:0.9;" id="hero-role">Візитка →</div>
+						</div>
+					</div>
+				</section>
+
+				<h2 class="section-title">Освітні компоненти</h2>
+				<div class="components-grid" id="subjects-container">
+					Завантаження дисциплін...
+				</div>
+			</div>
+
+			<!-- 2. СТОРІНКА ПРЕДМЕТА -->
+			<div id="view-subject" class="page-view">
+				<button class="btn-back" onclick="navToMain()">← Назад до предметів</button>
+
+				<div class="subject-header-box">
+					<h1 id="subject-title" style="color: var(--deep-blue); font-size: 1.8rem; margin-bottom: 8px;">...</h1>
+					<p id="subject-desc" style="color: var(--text-muted); font-size: 0.95rem;">...</p>
+					
+					<!-- БЛОК ДОКУМЕНТІВ ВСЕРЕДИНІ ПРЕДМЕТА -->
+					<div class="subject-docs-container" id="subject-header-docs" style="margin-top: 16px; margin-bottom: 0;"></div>
+				</div>
+
+				<div class="filters-container" id="filters-bar"></div>
+
+				<div id="modules-container"></div>
+			</div>
+
+			<!-- 3. СТОРІНКА ЛЕКЦІЇ -->
+			<div id="view-lesson" class="page-view">
+				<button class="btn-back" onclick="navToSubject()">← Назад до дисципліни</button>
+
+				<article class="lecture-content-box">
+					<div style="margin-bottom: 16px;">
+						<span id="lesson-badge" class="task-badge">Матеріал</span>
+					</div>
+					<h1 id="lesson-title" style="color: var(--deep-blue); font-size: 1.8rem; margin-bottom: 20px;">...</h1>
+					
+					<!-- ТЕКСТ ТА ФОТО ЛЕКЦІЇ -->
+					<div id="lesson-body"></div>
+
+					<div class="download-card" id="attachment-block" style="display: none;">
+						<div>
+							<strong style="color: var(--deep-blue);">📎 Прикріплені матеріали</strong>
+							<p style="font-size: 0.85rem; color: var(--text-muted);">Відкрити файл або інструкцію у новому вікні.</p>
+						</div>
+						<a id="download-btn" target="_blank" class="btn-back" style="margin: 0; background: var(--bright-blue); color: white; text-decoration: none;">Переглянути 🚀</a>
+					</div>
+				</article>
+			</div>
+		</main>
+
+		<!-- МОДАЛЬНЕ ВІКНО ПОРТФОЛІО -->
+		<div class="modal-overlay" id="portfolioModal" onclick="closePortfolioOutside(event)">
+			<div class="modal-card">
+				<button class="close-modal-btn" onclick="closePortfolioModal()">✕</button>
+				<div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
+					<div class="teacher-avatar" id="modal-avatar">👨‍🏫</div>
+					<div>
+						<h3 id="modal-name" style="color:var(--deep-blue); font-size:1.25rem;">Викладач ДФКР</h3>
+						<p id="modal-role" style="color:var(--bright-blue); font-size:0.88rem; font-weight:600;">Спеціаліст</p>
+					</div>
+				</div>
+				<p id="modal-bio">Завантаження інформації...</p>
+				<div id="modal-contacts-box">
+					<strong>📬 Контакти:</strong> <span id="modal-contacts">...</span>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			const SANITY_PROJECT_ID = "uld9o5j2"; 
+			const SANITY_DATASET = "production";
+
+			let subjectsList = [];
+			let lessonsList = [];
+			let taskTypesList = [];
+			let portfolioData = null;
+
+			let currentSubject = null;
+			let activeFilter = 'ALL';
+
+			async function loadPortalData() {
+				try {
+					// 1. Портфоліо
+					const pRes = await fetch(
+						`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "portfolio"][0]')}`,
+						{ cache: 'no-store' }
+					);
+					const pData = await pRes.json();
+					if(pData.result) {
+						portfolioData = pData.result;
+						applyPortfolioData(portfolioData);
+					}
+
+					// 2. Типи завдань
+					const ttRes = await fetch(
+						`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent('*[_type == "taskType"]')}`,
+						{ cache: 'no-store' }
+					);
+					const ttData = await ttRes.json();
+					taskTypesList = ttData.result || [];
+
+					// 3. Дисципліни
+					const subGROQ = `*[_type == "subject"]{
+						...,
+						"syllabusUrl": coalesce(syllabusUrl, syllabus.asset->url),
+						"workProgramUrl": coalesce(workProgramUrl, workProgram.asset->url),
+						"studyProgramUrl": coalesce(studyProgramUrl, studyProgram.asset->url)
+					}`;
+					const subRes = await fetch(
+						`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent(subGROQ)}`,
+						{ cache: 'no-store' }
+					);
+					const subData = await subRes.json();
+					subjectsList = subData.result || [];
+
+					// 4. Лекції
+					const lesGROQ = `*[_type == "lesson"]{
+						...,
+						"fileUrl": coalesce(fileUrl, file.asset->url)
+					}`;
+					const lesRes = await fetch(
+						`https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent(lesGROQ)}`,
+						{ cache: 'no-store' }
+					);
+					const lesData = await lesRes.json();
+					lessonsList = lesData.result || [];
+
+					renderSubjects();
+				} catch (err) {
+					console.error("Помилка завантаження Sanity:", err);
+				}
+			}
+
+			function applyPortfolioData(p) {
+				if(p.name) {
+					document.getElementById('hero-name').innerText = p.name;
+					document.getElementById('modal-name').innerText = p.name;
+				}
+				if(p.role) {
+					document.getElementById('hero-role').innerText = p.role;
+					document.getElementById('modal-role').innerText = p.role;
+				}
+				if(p.avatar) {
+					document.getElementById('hero-avatar').innerText = p.avatar;
+					document.getElementById('modal-avatar').innerText = p.avatar;
+				}
+				if(p.color) {
+					document.getElementById('hero-portfolio-btn').style.borderColor = p.color;
+					document.getElementById('modal-role').style.color = p.color;
+				}
+				if(p.bio) document.getElementById('modal-bio').innerText = p.bio;
+				if(p.contacts) document.getElementById('modal-contacts').innerText = p.contacts;
+			}
+
+			function showView(viewId) {
+				document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
+				document.getElementById(viewId).classList.add('active');
+				window.scrollTo(0, 0);
+			}
+
+			function navToMain() {
+				showView('view-main');
+				document.getElementById('breadcrumbs').innerHTML = '<span>Головна</span>';
+			}
+
+			function navToSubject(title) {
+				if (title) {
+					currentSubject = subjectsList.find(s => s.title === title) || { title: title, desc: '' };
+				}
+
+				document.getElementById('subject-title').innerText = currentSubject.title;
+				document.getElementById('subject-desc').innerText = currentSubject.desc || '';
+
+				// Додаємо кнопки документів у шапку сторінки дисципліни
+				const docsHeader = document.getElementById('subject-header-docs');
+				const hasDocs = currentSubject.syllabusUrl || currentSubject.workProgramUrl || currentSubject.studyProgramUrl;
+				
+				if (hasDocs) {
+					docsHeader.style.display = 'flex';
+					docsHeader.innerHTML = `
+						${currentSubject.syllabusUrl ? `<a href="${escapeAttr(currentSubject.syllabusUrl)}" target="_blank" class="doc-btn">📄 Силабус</a>` : ''}
+						${currentSubject.workProgramUrl ? `<a href="${escapeAttr(currentSubject.workProgramUrl)}" target="_blank" class="doc-btn">📋 Робоча програма</a>` : ''}
+						${currentSubject.studyProgramUrl ? `<a href="${escapeAttr(currentSubject.studyProgramUrl)}" target="_blank" class="doc-btn">🎓 Навчальна програма</a>` : ''}
+					`;
+				} else {
+					docsHeader.style.display = 'none';
+				}
+
+				document.getElementById('breadcrumbs').innerHTML = `
+					<a onclick="navToMain()">Головна</a> <span>/</span> <span>${currentSubject.title}</span>
+				`;
+
+				activeFilter = 'ALL';
+				renderFilters();
+				renderLessonsList();
+				showView('view-subject');
+			}
+
+			function openLessonById(lessonId) {
+				const lesson = lessonsList.find(l => l._id === lessonId);
+				if (!lesson) return;
+
+				document.getElementById('lesson-title').innerText = lesson.title || 'Без назви';
+				
+				// ВИКОРИСТОВУЄМО innerHTML ЩОБ РЕНДЕРИТИ ТЕКСТ ТА ФОТОГРАФІЇ
+				document.getElementById('lesson-body').innerHTML = lesson.content || '<p style="color: #64748b;">Текст матеріалу відсутній.</p>';
+
+				const badge = document.getElementById('lesson-badge');
+				badge.innerText = lesson.taskType || 'Матеріал';
+				const colorObj = taskTypesList.find(t => t.title === lesson.taskType);
+				badge.style.background = colorObj ? colorObj.color : '#e0f2fe';
+
+				const attachBlock = document.getElementById('attachment-block');
+				if (lesson.fileUrl && lesson.fileUrl.trim() !== '') {
+					attachBlock.style.display = 'flex';
+					document.getElementById('download-btn').href = lesson.fileUrl;
+				} else {
+					attachBlock.style.display = 'none';
+				}
+
+				document.getElementById('breadcrumbs').innerHTML = `
+					<a onclick="navToMain()">Головна</a> <span>/</span>
+					<a onclick="navToSubject()">${currentSubject ? currentSubject.title : 'Предмет'}</a> <span>/</span>
+					<span>${lesson.title}</span>
+				`;
+
+				showView('view-lesson');
+			}
+
+			function renderSubjects() {
+				const container = document.getElementById('subjects-container');
+				if(subjectsList.length === 0) {
+					container.innerHTML = '<p style="color: #64748b;">Дисциплін поки немає.</p>';
+					return;
+				}
+
+				container.innerHTML = subjectsList.map(sub => {
+					const hasDocs = sub.syllabusUrl || sub.workProgramUrl || sub.studyProgramUrl;
+
+					return `
+						<div class="component-card" onclick="navToSubject('${escapeAttr(sub.title)}')">
+							<div>
+								<div class="card-header">
+									<div class="icon-box">${sub.icon || '📚'}</div>
+									<div class="card-title">${sub.title}</div>
+								</div>
+								<p class="card-description">${sub.desc || ''}</p>
+
+								${hasDocs ? `
+									<!-- БЛОК КНОПОК ДОКУМЕНТІВ (зупиняємо перехід у предмет при кліку на кнопку) -->
+									<div class="subject-docs-container" onclick="event.stopPropagation()">
+										${sub.syllabusUrl ? `<a href="${escapeAttr(sub.syllabusUrl)}" target="_blank" class="doc-btn">📄 Силабус</a>` : ''}
+										${sub.workProgramUrl ? `<a href="${escapeAttr(sub.workProgramUrl)}" target="_blank" class="doc-btn">📋 Робоча програма</a>` : ''}
+										${sub.studyProgramUrl ? `<a href="${escapeAttr(sub.studyProgramUrl)}" target="_blank" class="doc-btn">🎓 Навчальна програма</a>` : ''}
+									</div>
+								` : ''}
+							</div>
+							<div class="card-footer">
+								<span>Перейти до матеріалів</span>
+								<span>→</span>
+							</div>
+						</div>
+					`;
+				}).join('');
+			}
+
+			function renderFilters() {
+				const bar = document.getElementById('filters-bar');
+				
+				let html = `
+					<button class="filter-btn ${activeFilter === 'ALL' ? 'active' : ''}" onclick="setFilter('ALL')">
+						✨ Усі матеріали
+					</button>
+				`;
+
+				html += taskTypesList.map(tt => `
+					<button class="filter-btn ${activeFilter === tt.title ? 'active' : ''}" onclick="setFilter('${escapeAttr(tt.title)}')">
+						<span class="filter-dot" style="background: ${tt.color || '#00a3ff'};"></span>
+						${tt.title}
+					</button>
+				`).join('');
+
+				bar.innerHTML = html;
+			}
+
+			function setFilter(typeTitle) {
+				activeFilter = typeTitle;
+				renderFilters();
+				renderLessonsList();
+			}
+
+			function renderLessonsList() {
+				const container = document.getElementById('modules-container');
+				let filtered = lessonsList.filter(l => l.discipline === currentSubject.title);
+
+				if (activeFilter !== 'ALL') {
+					filtered = filtered.filter(l => l.taskType === activeFilter);
+				}
+
+				if (filtered.length > 0) {
+					container.innerHTML = `
+						<div class="module-block">
+							<div class="lessons-list">
+								${filtered.map(item => {
+									const ttObj = taskTypesList.find(t => t.title === item.taskType);
+									const badgeColor = ttObj ? ttObj.color : '#e0f2fe';
+
+									return `
+										<div class="lesson-item" onclick="openLessonById('${item._id}')">
+											<span style="font-weight: 600; font-size: 0.95rem;">${item.title}</span>
+											<span class="task-badge" style="background: ${badgeColor};">${item.taskType || 'Матеріал'}</span>
+										</div>
+									`;
+								}).join('')}
+							</div>
+						</div>
+					`;
+				} else {
+					container.innerHTML = '<p style="color: #64748b; margin-top: 10px;">Матеріалів за обраним фільтром не знайдено.</p>';
+				}
+			}
+
+			function escapeAttr(text) {
+				if (!text) return '';
+				return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+			}
+
+			function openPortfolioModal() { document.getElementById('portfolioModal').style.display = 'flex'; }
+			function closePortfolioModal() { document.getElementById('portfolioModal').style.display = 'none'; }
+			function closePortfolioOutside(e) { if (e.target.classList.contains('modal-overlay')) closePortfolioModal(); }
+
+			document.addEventListener('DOMContentLoaded', loadPortalData);
+		</script>
+	</body>
+</html>
